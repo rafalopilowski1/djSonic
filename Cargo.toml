@@ -1,0 +1,11 @@
+[package]
+name = "djSonic"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serenity = "0.10"
+quick-xml = "0.22.0"
+# poise ="0.0.0" - TODO: wait until it's released!
