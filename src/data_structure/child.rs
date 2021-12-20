@@ -46,6 +46,7 @@ enum MediaType {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct NowPlaying {
+    #[serde(rename="$value")]
     entries: Vec<NowPlayingEntry>,
 }
 #[derive(Deserialize, Debug)]

@@ -81,13 +81,15 @@ pub(crate) struct ArtistInfo2 {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Index {
     name: String,
+    #[serde(rename="$value")]
     artists: Vec<Artist>,
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Indexes {
-    last_modified: u64,
+    last_modified: Option<u64>,
     ignored_articles: String,
+    #[serde(rename="$value")]
     base: Vec<IndexesBase>,
 }
 #[derive(Deserialize, Debug)]

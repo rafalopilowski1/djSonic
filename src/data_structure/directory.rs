@@ -6,6 +6,7 @@ use crate::data_structure::child::Child;
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Directory {
+    #[serde(rename="$value")]
     childes: Vec<Child>,
     id: String,
     parent: Option<String>,

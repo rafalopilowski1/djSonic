@@ -22,6 +22,9 @@ use crate::data_structure::{
 };
 use quick_xml::de::{from_str, DeError};
 use serde::Deserialize;
+use crate::data_structure::genre::Genres;
+use crate::data_structure::music_folder::MusicFolders;
+
 #[derive(Deserialize, Debug)]
 #[serde(rename = "kebab-case")]
 pub(crate) struct SubSonicResponse {
@@ -30,13 +33,20 @@ pub(crate) struct SubSonicResponse {
     status: String,  // ResponseStatus: {ok, failed}
     version: String, // Version: regex restriction: `\d+\.\d+\.\d+`
 }
+
+impl SubSonicResponse {
+    pub(crate) fn getValue(self) -> ResponseValue {
+        self.value
+    }
+}
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) enum ResponseValue {
-    MusicFolders(Vec<MusicFolder>),
+    MusicFolders(MusicFolders),
     Indexes(Indexes),
     Directory(Directory),
-    Genres(Vec<Genre>),
+    Genres(Genres),
     Artists(ArtistsID3),
     Artist(ArtistWithAlbumsID3),
     Album(AlbumWithSongsID3),
@@ -90,8 +100,8 @@ impl Display for Error {
 }
 
 impl Error {
-    pub(crate) fn new(code: u16, message: String) -> Self {
-        Self { code, message }
+    pub(crate) fn new(code: u16, message: &str) -> Self {
+        Self { code, message: message.to_owned() }
     }
 }
 impl std::error::Error for Error {
