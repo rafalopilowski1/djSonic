@@ -25,5 +25,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if let Some(indexes) = subsonic_client.get_indexes().await? {
             println!("{:#?}", indexes);
     };
+    // if let Some(bookmarks) = subsonic_client.get_bookmarks().await? {
+    //         println!("{:#?}", bookmarks);
+    // };
     Ok(())
 }

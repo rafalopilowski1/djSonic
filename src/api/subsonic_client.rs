@@ -8,6 +8,7 @@ use crate::data_structure::response::{Error as ResponseError, ResponseValue, Sub
 
 use quick_xml::events::{attributes, Event};
 use reqwest::{Client, StatusCode};
+use crate::data_structure::bookmark::Bookmarks;
 use crate::data_structure::directory::Directory;
 use crate::data_structure::genre::{Genre, Genres};
 use crate::data_structure::music_folder::MusicFolders;
@@ -93,6 +94,14 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::Indexes(indexes) => Ok(Some(indexes)),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) async fn get_bookmarks(&self) -> Result<Option<Bookmarks>,Box<dyn Error>> {
+        let response = self.get_response("/getBookmarks").await?;
+        let value = response.getValue();
+        match value {
+            ResponseValue::Bookmarks(bookmarks) => Ok(Some(bookmarks)),
             _ => Ok(None),
         }
     }

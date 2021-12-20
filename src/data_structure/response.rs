@@ -22,6 +22,7 @@ use crate::data_structure::{
 };
 use quick_xml::de::{from_str, DeError};
 use serde::Deserialize;
+use crate::data_structure::bookmark::Bookmarks;
 use crate::data_structure::genre::Genres;
 use crate::data_structure::music_folder::MusicFolders;
 
@@ -73,7 +74,7 @@ pub(crate) enum ResponseValue {
     Podcasts(Vec<PodcastChannel>),
     NewestPodcasts(Vec<PodcastEpisode>),
     InternetRadioStations(Vec<InternetRadioStation>),
-    Bookmarks(Vec<Bookmark>),
+    Bookmarks(Bookmarks),
     PlayQueue(PlayQueue),
     Shares(Vec<Share>),
     Starred(Starred),
