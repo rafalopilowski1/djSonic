@@ -1,6 +1,10 @@
+use serde::Deserialize;
+
 use crate::data_structure::child::Child;
 use std::time::Duration;
 
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub(crate) enum PodcastStatus {
     New,
     Downloading,
@@ -9,7 +13,8 @@ pub(crate) enum PodcastStatus {
     Deleted,
     Skipped,
 }
-
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct PodcastEpisode {
     child: Child,
     stream_id: Option<String>,
@@ -18,7 +23,8 @@ pub(crate) struct PodcastEpisode {
     status: PodcastStatus,
     publish_date: Option<Duration>,
 }
-
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct PodcastChannel {
     episodes: Vec<PodcastEpisode>,
     id: String,

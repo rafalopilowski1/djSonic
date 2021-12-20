@@ -1,7 +1,10 @@
 use std::time::Duration;
 
-use crate::data_structure::child::Child;
+use serde::Deserialize;
 
+use crate::data_structure::child::Child;
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct Playlist {
     allowed_users: Vec<String>,
     id: String,
@@ -15,6 +18,8 @@ pub(crate) struct Playlist {
     changed: Duration,
     cover_art: Option<String>,
 }
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct PlaylistWithSongs {
     playlist: Playlist,
     entries: Vec<Child>,

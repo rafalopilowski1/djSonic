@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::data_structure::{
     album::{AlbumID3, AlbumInfo, AlbumWithSongsID3},
     artist::{ArtistInfo, ArtistInfo2, ArtistWithAlbumsID3, ArtistsID3, Indexes},
@@ -18,14 +20,19 @@ use crate::data_structure::{
     user::User,
     video::VideoInfo,
 };
-
-struct Response {
+use quick_xml::de::{from_str, DeError};
+use serde::Deserialize;
+#[derive(Deserialize, Debug)]
+#[serde(rename = "kebab-case")]
+pub(crate) struct SubSonicResponse {
+    #[serde(rename="$value")]
     value: ResponseValue,
     status: String,  // ResponseStatus: {ok, failed}
     version: String, // Version: regex restriction: `\d+\.\d+\.\d+`
 }
-
-enum ResponseValue {
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) enum ResponseValue {
     MusicFolders(Vec<MusicFolder>),
     Indexes(Indexes),
     Directory(Directory),
@@ -70,7 +77,25 @@ enum ResponseValue {
     ScanStatus(ScanStatus),
     Error(Error),
 }
+#[derive(Deserialize,Debug)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct Error {
-    code: u32,
+    code: u16,
     message: String,
+}
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Error {0} - {1}", self.code, self.message)
+    }
+}
+
+impl Error {
+    pub(crate) fn new(code: u16, message: String) -> Self {
+        Self { code, message }
+    }
+}
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
 }

@@ -1,5 +1,8 @@
 use std::time::Duration;
 
+use serde::Deserialize;
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct Child {
     id: String,
     parent: Option<String>,
@@ -32,17 +35,21 @@ pub(crate) struct Child {
     original_width: Option<u32>,
     original_height: Option<u32>,
 }
-
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 enum MediaType {
     Music,
     Podcast,
     Audiobook,
     Video,
 }
-
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct NowPlaying {
     entries: Vec<NowPlayingEntry>,
 }
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct NowPlayingEntry {
     child: Child,
     username: String,

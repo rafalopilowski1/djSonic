@@ -1,5 +1,5 @@
 mod album;
-mod artist;
+pub(crate) mod artist;
 mod bookmark;
 mod chat_message;
 mod child;
@@ -11,7 +11,7 @@ mod misc;
 mod music_folder;
 mod playlist;
 mod podcast;
-mod response;
+pub(crate) mod response;
 mod search;
 mod share;
 mod starred;
