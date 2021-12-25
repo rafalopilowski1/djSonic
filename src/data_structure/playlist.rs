@@ -1,5 +1,3 @@
-
-
 use serde::Deserialize;
 
 use crate::data_structure::child::Child;
@@ -13,7 +11,7 @@ pub(crate) struct Playlist {
     owner: Option<String>,
     public: Option<bool>,
     song_count: u32,
-    String: u32,
+    duration: u32,
     created: String,
     changed: String,
     cover_art: Option<String>,
