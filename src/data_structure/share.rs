@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 use crate::data_structure::child::Child;
-use std::time::Duration;
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Share {
@@ -10,8 +10,8 @@ pub(crate) struct Share {
     url: String,
     description: Option<String>,
     username: String,
-    created: Duration,
-    expires: Option<Duration>,
-    last_visited: Option<Duration>,
+    created: String,
+    expires: Option<String>,
+    last_visited: Option<String>,
     visit_count: u32,
 }

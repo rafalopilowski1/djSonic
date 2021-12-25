@@ -1,4 +1,4 @@
-use std::time::Duration;
+
 
 use serde::Deserialize;
 
@@ -14,8 +14,8 @@ pub(crate) struct ScanStatus {
 pub(crate) struct License {
     valid: bool,
     email: String,
-    license_expires: Duration,
-    trial_expires: Duration,
+    license_expires: String,
+    trial_expires: String,
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -30,6 +30,6 @@ pub(crate) struct PlayQueue {
     current: Option<u32>,
     position: Option<u64>,
     username: String,
-    changed: Duration,
+    changed: String,
     changed_by: String,
 }

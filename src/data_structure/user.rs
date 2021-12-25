@@ -1,4 +1,4 @@
-use std::time::Duration;
+
 
 use serde::Deserialize;
 #[derive(Deserialize, Debug)]
@@ -21,5 +21,5 @@ pub(crate) struct User {
     jukebox_bool: bool,
     share_role: bool,
     video_conversation_role: bool,
-    avatar_last_changed: Option<Duration>,
+    avatar_last_changed: Option<String>,
 }

@@ -1,18 +1,17 @@
-use crate::data_structure::artist::{ArtistsID3, Indexes};
-use quick_xml::events::attributes::Attribute;
 use rand::prelude::*;
-use std::error::Error;
-use std::io::{BufRead, BufReader, Cursor};
-
-use crate::data_structure::response::{Error as ResponseError, ResponseValue, SubSonicResponse};
-
-use quick_xml::events::{attributes, Event};
 use reqwest::{Client, StatusCode};
-use crate::data_structure::bookmark::Bookmarks;
-use crate::data_structure::directory::Directory;
-use crate::data_structure::genre::{Genre, Genres};
-use crate::data_structure::music_folder::MusicFolders;
+use std::error::Error;
+use std::io::{BufReader, Cursor};
 
+use crate::data_structure::{
+    artist::{ArtistsID3, Indexes},
+    bookmark::Bookmarks,
+    directory::Directory,
+    genre::Genres,
+    music_folder::MusicFolders,
+    podcast::Podcasts,
+    response::{Error as ResponseError, ResponseValue, SubSonicResponse},
+};
 
 pub(crate) struct SubsonicClient {
     innerClient: Client,
@@ -36,12 +35,16 @@ impl SubsonicClient {
         let result = format!("u={0}&t={1}&s={2}", &self.user, &hash, &random);
         result
     }
-    async fn get_response(&self, path:&str) -> Result<SubSonicResponse, Box<dyn Error>> {
+    async fn get_response(&self, path: &str) -> Result<SubSonicResponse, Box<dyn Error>> {
         let response = self
             .innerClient
             .get(self.API_ENDPOINT.clone() + path + "?" + &self.get_auth_token())
             .send()
             .await?;
+        println!(
+            "{}",
+            self.API_ENDPOINT.clone() + path + "?" + &self.get_auth_token()
+        );
         if response.status() != StatusCode::OK {
             Err(Box::new(ResponseError::new(
                 response.status().as_u16(),
@@ -49,15 +52,22 @@ impl SubsonicClient {
             )))
         } else {
             let response_bytes = response.bytes().await?;
-            let response_clone = response_bytes.clone();
-            println!("{}", String::from_utf8(response_clone.to_vec())?);
+
             // TODO: Is using in-memory buffer a good idea for response bodies?
             let buf_read = BufReader::new(Cursor::new(response_bytes));
-            let response: SubSonicResponse = quick_xml::de::from_reader(buf_read)?;
-            Ok(response)
+            let mut de = quick_xml::de::Deserializer::from_reader(buf_read);
+            let response: Result<SubSonicResponse, _> = serde_path_to_error::deserialize(&mut de);
+            match response {
+                Ok(res) => Ok(res),
+                Err(err) => {
+                    let path = err.path().to_string();
+                    println!("{}", path);
+                    Err(Box::new(err))
+                }
+            }
         }
     }
-    pub(crate) async fn get_artists(&self) -> Result<Option<ArtistsID3>,Box<dyn Error>> {
+    pub(crate) async fn get_artists(&self) -> Result<Option<ArtistsID3>, Box<dyn Error>> {
         let response = self.get_response("/getArtists").await?;
         let value = response.getValue();
         match value {
@@ -65,7 +75,7 @@ impl SubsonicClient {
             _ => Ok(None),
         }
     }
-    pub(crate) async fn get_genres(&self) -> Result<Option<Genres>,Box<dyn Error>> {
+    pub(crate) async fn get_genres(&self) -> Result<Option<Genres>, Box<dyn Error>> {
         let response = self.get_response("/getGenres").await?;
         let value = response.getValue();
         match value {
@@ -73,7 +83,7 @@ impl SubsonicClient {
             _ => Ok(None),
         }
     }
-    pub(crate) async fn get_directory(&self) -> Result<Option<Directory>,Box<dyn Error>> {
+    pub(crate) async fn get_directory(&self) -> Result<Option<Directory>, Box<dyn Error>> {
         let response = self.get_response("/getMusicDirectory").await?;
         let value = response.getValue();
         match value {
@@ -81,7 +91,7 @@ impl SubsonicClient {
             _ => Ok(None),
         }
     }
-    pub(crate) async fn get_music_folders(&self) -> Result<Option<MusicFolders>,Box<dyn Error>> {
+    pub(crate) async fn get_music_folders(&self) -> Result<Option<MusicFolders>, Box<dyn Error>> {
         let response = self.get_response("/getMusicFolders").await?;
         let value = response.getValue();
         match value {
@@ -89,7 +99,7 @@ impl SubsonicClient {
             _ => Ok(None),
         }
     }
-    pub(crate) async fn get_indexes(&self) -> Result<Option<Indexes>,Box<dyn Error>> {
+    pub(crate) async fn get_indexes(&self) -> Result<Option<Indexes>, Box<dyn Error>> {
         let response = self.get_response("/getIndexes").await?;
         let value = response.getValue();
         match value {
@@ -97,7 +107,7 @@ impl SubsonicClient {
             _ => Ok(None),
         }
     }
-    pub(crate) async fn get_bookmarks(&self) -> Result<Option<Bookmarks>,Box<dyn Error>> {
+    pub(crate) async fn get_bookmarks(&self) -> Result<Option<Bookmarks>, Box<dyn Error>> {
         let response = self.get_response("/getBookmarks").await?;
         let value = response.getValue();
         match value {
@@ -105,5 +115,14 @@ impl SubsonicClient {
             _ => Ok(None),
         }
     }
+    // TODO: Figure out how to deserialize number from a string? - blocking all structs with `Child`!
 
+    pub(crate) async fn get_podcasts(&self) -> Result<Option<Podcasts>, Box<dyn Error>> {
+        let response = self.get_response("/getPodcasts").await?;
+        let value = response.getValue();
+        match value {
+            ResponseValue::Podcasts(podcasts) => Ok(Some(podcasts)),
+            _ => Ok(None),
+        }
+    }
 }

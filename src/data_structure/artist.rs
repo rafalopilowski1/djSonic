@@ -1,7 +1,5 @@
-use std::time::Duration;
-
 use crate::data_structure::{album::AlbumID3, child::Child};
-use quick_xml::de::{from_str, DeError};
+
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -10,14 +8,14 @@ pub(crate) struct Artist {
     id: String,
     name: String,
     artist_image_url: Option<String>,
-    starred: Option<Duration>,
+    starred: Option<String>,
     user_rating: Option<u32>,    // UserRating: [1,5]
     average_rating: Option<f32>, // AverageRating: [1.0,5.0]
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ArtistsID3 {
-    #[serde(rename="$value")]
+    #[serde(rename = "$value")]
     artists: Vec<IndexID3>,
     ignored_articles: Option<String>,
 }
@@ -33,7 +31,7 @@ impl ArtistsID3 {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct IndexID3 {
-    #[serde(rename="$value")]
+    #[serde(rename = "$value")]
     artists: Vec<ArtistID3>,
     name: String,
 }
@@ -45,9 +43,8 @@ pub(crate) struct ArtistID3 {
     cover_art: Option<String>,
     artist_image_url: Option<String>,
     album_count: u32,
-    starred: Option<Duration>,
+    starred: Option<String>,
 }
-
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -81,7 +78,7 @@ pub(crate) struct ArtistInfo2 {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Index {
     name: String,
-    #[serde(rename="$value")]
+    #[serde(rename = "$value")]
     artists: Vec<Artist>,
 }
 #[derive(Deserialize, Debug)]
@@ -89,7 +86,7 @@ pub(crate) struct Index {
 pub(crate) struct Indexes {
     last_modified: Option<u64>,
     ignored_articles: String,
-    #[serde(rename="$value")]
+    #[serde(rename = "$value")]
     base: Vec<IndexesBase>,
 }
 #[derive(Deserialize, Debug)]

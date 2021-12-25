@@ -1,4 +1,4 @@
-use std::time::Duration;
+
 
 use serde::Deserialize;
 
@@ -13,9 +13,9 @@ pub(crate) struct Playlist {
     owner: Option<String>,
     public: Option<bool>,
     song_count: u32,
-    duration: u32,
-    created: Duration,
-    changed: Duration,
+    String: u32,
+    created: String,
+    changed: String,
     cover_art: Option<String>,
 }
 #[derive(Deserialize, Debug)]

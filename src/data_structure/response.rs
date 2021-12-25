@@ -20,16 +20,17 @@ use crate::data_structure::{
     user::User,
     video::VideoInfo,
 };
-use quick_xml::de::{from_str, DeError};
-use serde::Deserialize;
+
 use crate::data_structure::bookmark::Bookmarks;
 use crate::data_structure::genre::Genres;
 use crate::data_structure::music_folder::MusicFolders;
+use crate::data_structure::podcast::Podcasts;
+use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename = "kebab-case")]
 pub(crate) struct SubSonicResponse {
-    #[serde(rename="$value")]
+    #[serde(rename = "$value")]
     value: ResponseValue,
     status: String,  // ResponseStatus: {ok, failed}
     version: String, // Version: regex restriction: `\d+\.\d+\.\d+`
@@ -71,7 +72,7 @@ pub(crate) enum ResponseValue {
     RandomSongs(Vec<Child>),
     SongsByGenre(Vec<Child>),
     Lyrics(Lyrics),
-    Podcasts(Vec<PodcastChannel>),
+    Podcasts(Podcasts),
     NewestPodcasts(Vec<PodcastEpisode>),
     InternetRadioStations(Vec<InternetRadioStation>),
     Bookmarks(Bookmarks),
@@ -88,7 +89,7 @@ pub(crate) enum ResponseValue {
     ScanStatus(ScanStatus),
     Error(Error),
 }
-#[derive(Deserialize,Debug)]
+#[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Error {
     code: u16,
@@ -102,7 +103,10 @@ impl Display for Error {
 
 impl Error {
     pub(crate) fn new(code: u16, message: &str) -> Self {
-        Self { code, message: message.to_owned() }
+        Self {
+            code,
+            message: message.to_owned(),
+        }
     }
 }
 impl std::error::Error for Error {

@@ -15,3 +15,5 @@ md5 = "0.7.0"
 rand = "0.8.4"
 serde = {version="1.0.132",features = ["derive"]}
 dotenv = "0.15.0"
+serde_with="1.11.0"
+serde_path_to_error="0.1.5"

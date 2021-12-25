@@ -1,7 +1,6 @@
 use serde::Deserialize;
 
 use crate::data_structure::child::Child;
-use std::time::Duration;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -16,17 +15,21 @@ pub(crate) enum PodcastStatus {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct PodcastEpisode {
+    #[serde(flatten)]
     child: Child,
+
     stream_id: Option<String>,
     channel_id: String,
     description: Option<String>,
     status: PodcastStatus,
-    publish_date: Option<Duration>,
+    publish_date: Option<String>,
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct PodcastChannel {
+    #[serde(rename = "$value")]
     episodes: Vec<PodcastEpisode>,
+
     id: String,
     url: String,
     title: Option<String>,
@@ -35,4 +38,10 @@ pub(crate) struct PodcastChannel {
     original_image_url: Option<String>,
     status: PodcastStatus,
     error_message: Option<String>,
+}
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Podcasts {
+    #[serde(rename = "$value")]
+    values: Vec<PodcastChannel>,
 }

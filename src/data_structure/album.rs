@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 use crate::data_structure::child::Child;
-use std::time::Duration;
+
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -12,10 +12,10 @@ pub(crate) struct AlbumID3 {
     artist_id: Option<String>,
     cover_art: Option<String>,
     song_count: u32,
-    duration: u32,
+    String: u32,
     play_count: Option<u64>,
-    created: Duration,
-    starred: Option<Duration>,
+    created: String,
+    starred: Option<String>,
     year: Option<u32>,
     genre: Option<String>,
 }

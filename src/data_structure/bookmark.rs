@@ -1,4 +1,4 @@
-use std::time::Duration;
+
 
 use serde::Deserialize;
 
@@ -11,8 +11,8 @@ pub(crate) struct Bookmark {
     position: u64,
     username: String,
     comment: Option<String>,
-    created: Duration,
-    changed: Duration,
+    created: String,
+    changed: String,
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
