@@ -90,6 +90,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::Artists(artists) => Ok(Some(artists)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -98,6 +99,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::Genres(genres) => Ok(Some(genres)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -106,6 +108,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::Directory(directory) => Ok(Some(directory)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -114,6 +117,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::MusicFolders(music_folders) => Ok(Some(music_folders)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -122,6 +126,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::Indexes(indexes) => Ok(Some(indexes)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -130,6 +135,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::Bookmarks(bookmarks) => Ok(Some(bookmarks)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -139,6 +145,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::Podcasts(podcasts) => Ok(Some(podcasts)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -147,6 +154,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::NowPlaying(nowPlaying) => Ok(Some(nowPlaying)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -155,6 +163,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::Playlists(playlists) => Ok(Some(playlists)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -163,6 +172,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::RandomSongs(randomSongs) => Ok(Some(randomSongs)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -173,6 +183,7 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::NewestPodcasts(newestPodcasts) => Ok(Some(newestPodcasts)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
