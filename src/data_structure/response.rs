@@ -24,7 +24,9 @@ use crate::data_structure::{
 use crate::data_structure::bookmark::Bookmarks;
 use crate::data_structure::genre::Genres;
 use crate::data_structure::music_folder::MusicFolders;
+use crate::data_structure::playlist::Playlists;
 use crate::data_structure::podcast::Podcasts;
+
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -59,7 +61,7 @@ pub(crate) enum ResponseValue {
     // searchResult,
     SearchResult2(SearchResult2),
     SearchResult3(SearchResult3),
-    Playlists(Vec<Playlist>),
+    Playlists(Playlists),
     Playlist(Playlist),
     JukeboxStatus(JukeboxStatus),
     JukeboxPlaylist(JukeboxPlaylist),

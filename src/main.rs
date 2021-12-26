@@ -42,5 +42,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //     println!("{:#?}", nowPlaying);
     // };
 
+    if let Some(playlists) = subsonic_client.get_playlists().await? {
+        println!("{:#?}", playlists);
+    }
     Ok(())
 }

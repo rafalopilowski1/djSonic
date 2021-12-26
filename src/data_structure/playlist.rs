@@ -22,3 +22,10 @@ pub(crate) struct PlaylistWithSongs {
     playlist: Playlist,
     entries: Vec<Child>,
 }
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Playlists {
+    #[serde(rename = "$value")]
+    #[serde(default)]
+    entries: Option<Vec<Playlist>>,
+}

@@ -4,6 +4,7 @@ use std::error::Error;
 use std::io::{BufReader, Cursor};
 
 use crate::data_structure::child::NowPlaying;
+use crate::data_structure::playlist::Playlists;
 use crate::data_structure::{
     artist::{ArtistsID3, Indexes},
     bookmark::Bookmarks,
@@ -130,6 +131,14 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::NowPlaying(nowPlaying) => Ok(Some(nowPlaying)),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) async fn get_playlists(&self) -> Result<Option<Playlists>, Box<dyn Error>> {
+        let response = self.get_response("/getPlaylists").await?;
+        let value = response.getValue();
+        match value {
+            ResponseValue::Playlists(playlists) => Ok(Some(playlists)),
             _ => Ok(None),
         }
     }
