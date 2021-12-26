@@ -3,6 +3,7 @@ use reqwest::{Client, StatusCode};
 use std::error::Error;
 use std::io::{BufReader, Cursor};
 
+use crate::data_structure::child::NowPlaying;
 use crate::data_structure::{
     artist::{ArtistsID3, Indexes},
     bookmark::Bookmarks,
@@ -115,13 +116,20 @@ impl SubsonicClient {
             _ => Ok(None),
         }
     }
-    // TODO: Figure out how to deserialize number from a string? - blocking all structs with `Child`!
 
     pub(crate) async fn get_podcasts(&self) -> Result<Option<Podcasts>, Box<dyn Error>> {
         let response = self.get_response("/getPodcasts").await?;
         let value = response.getValue();
         match value {
             ResponseValue::Podcasts(podcasts) => Ok(Some(podcasts)),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) async fn get_now_playing(&self) -> Result<Option<NowPlaying>, Box<dyn Error>> {
+        let response = self.get_response("/getNowPlaying").await?;
+        let value = response.getValue();
+        match value {
+            ResponseValue::NowPlaying(nowPlaying) => Ok(Some(nowPlaying)),
             _ => Ok(None),
         }
     }

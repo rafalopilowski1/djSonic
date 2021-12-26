@@ -32,9 +32,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //         println!("{:#?}", bookmarks);
     // };
 
-    if let Some(podcasts) = subsonic_client.get_podcasts().await? {
-        println!("{:#?}", podcasts);
-    };
+    // SLOW!!!
+
+    // if let Some(podcasts) = subsonic_client.get_podcasts().await? {
+    //     println!("{:#?}", podcasts);
+    // };
+
+    // if let Some(nowPlaying) = subsonic_client.get_now_playing().await? {
+    //     println!("{:#?}", nowPlaying);
+    // };
 
     Ok(())
 }
