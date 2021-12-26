@@ -48,5 +48,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if let Some(randomSongs) = subsonic_client.get_random_songs().await? {
         println!("{:#?}", randomSongs);
     }
+    if let Some(newestPodcasts) = subsonic_client.get_newest_podcasts().await? {
+        println!("{:#?}", newestPodcasts);
+    }
     Ok(())
 }

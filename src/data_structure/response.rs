@@ -25,6 +25,7 @@ use crate::data_structure::bookmark::Bookmarks;
 use crate::data_structure::genre::Genres;
 use crate::data_structure::music_folder::MusicFolders;
 use crate::data_structure::playlist::Playlists;
+use crate::data_structure::podcast::NewestPodcasts;
 use crate::data_structure::podcast::Podcasts;
 
 use serde::Deserialize;
@@ -77,7 +78,7 @@ pub(crate) enum ResponseValue {
     SongsByGenre(Vec<Child>),
     Lyrics(Lyrics),
     Podcasts(Podcasts),
-    NewestPodcasts(Vec<PodcastEpisode>),
+    NewestPodcasts(NewestPodcasts),
     InternetRadioStations(Vec<InternetRadioStation>),
     Bookmarks(Bookmarks),
     PlayQueue(PlayQueue),

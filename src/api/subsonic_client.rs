@@ -5,6 +5,7 @@ use std::io::{BufReader, Cursor};
 
 use crate::data_structure::child::{NowPlaying, RandomSongs};
 use crate::data_structure::playlist::Playlists;
+use crate::data_structure::podcast::NewestPodcasts;
 use crate::data_structure::{
     artist::{ArtistsID3, Indexes},
     bookmark::Bookmarks,
@@ -147,6 +148,16 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::RandomSongs(randomSongs) => Ok(Some(randomSongs)),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) async fn get_newest_podcasts(
+        &self,
+    ) -> Result<Option<NewestPodcasts>, Box<dyn Error>> {
+        let response = self.get_response("/getNewestPodcasts").await?;
+        let value = response.getValue();
+        match value {
+            ResponseValue::NewestPodcasts(newestPodcasts) => Ok(Some(newestPodcasts)),
             _ => Ok(None),
         }
     }

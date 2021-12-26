@@ -45,3 +45,9 @@ pub(crate) struct Podcasts {
     #[serde(rename = "$value")]
     values: Vec<PodcastChannel>,
 }
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct NewestPodcasts {
+    #[serde(rename = "$value")]
+    values: Vec<PodcastEpisode>,
+}
