@@ -1,19 +1,19 @@
 use std::fmt::Display;
 
 use crate::data_structure::{
-    album::{AlbumID3, AlbumInfo, AlbumWithSongsID3},
+    album::{AlbumID3, AlbumInfo, AlbumList2, AlbumWithSongsID3},
     artist::{ArtistInfo, ArtistInfo2, ArtistWithAlbumsID3, ArtistsID3, Indexes},
-    bookmark::Bookmark,
+    bookmark::Bookmarks,
     chat_message::ChatMessage,
-    child::{Child, NowPlaying},
+    child::{Child, NowPlaying, RandomSongs},
     directory::Directory,
-    genre::Genre,
+    genre::Genres,
     internet_radio::InternetRadioStation,
     jukebox::{JukeboxPlaylist, JukeboxStatus},
     misc::{License, Lyrics, PlayQueue, ScanStatus},
-    music_folder::MusicFolder,
-    playlist::Playlist,
-    podcast::{PodcastChannel, PodcastEpisode},
+    music_folder::MusicFolders,
+    playlist::{Playlist, Playlists},
+    podcast::{NewestPodcasts, Podcasts},
     search::{SearchResult2, SearchResult3},
     share::Share,
     starred::{Starred, Starred2},
@@ -21,16 +21,7 @@ use crate::data_structure::{
     video::VideoInfo,
 };
 
-use crate::data_structure::bookmark::Bookmarks;
-use crate::data_structure::genre::Genres;
-use crate::data_structure::music_folder::MusicFolders;
-use crate::data_structure::playlist::Playlists;
-use crate::data_structure::podcast::NewestPodcasts;
-use crate::data_structure::podcast::Podcasts;
-
 use serde::Deserialize;
-
-use crate::data_structure::child::RandomSongs;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename = "kebab-case")]
@@ -73,7 +64,7 @@ pub(crate) enum ResponseValue {
     User(User),
     ChatMessages(Vec<ChatMessage>),
     AlbumList(Vec<Child>),
-    AlbumList2(Vec<AlbumID3>),
+    AlbumList2(AlbumList2),
     RandomSongs(RandomSongs),
     SongsByGenre(Vec<Child>),
     Lyrics(Lyrics),
@@ -112,6 +103,12 @@ impl Error {
             code,
             message: message.to_owned(),
         }
+    }
+    pub(crate) fn getCode(self) -> u16 {
+        self.code
+    }
+    pub(crate) fn getMessage(&self) -> &str {
+        &self.message
     }
 }
 impl std::error::Error for Error {

@@ -3,6 +3,7 @@ use reqwest::{Client, StatusCode};
 use std::error::Error;
 use std::io::{BufReader, Cursor};
 
+use crate::data_structure::album::{AlbumList2, AlbumListType};
 use crate::data_structure::child::{NowPlaying, RandomSongs};
 use crate::data_structure::playlist::Playlists;
 use crate::data_structure::podcast::NewestPodcasts;
@@ -38,15 +39,29 @@ impl SubsonicClient {
         let result = format!("u={0}&t={1}&s={2}", &self.user, &hash, &random);
         result
     }
-    async fn get_response(&self, path: &str) -> Result<SubSonicResponse, Box<dyn Error>> {
+    async fn get_response(
+        &self,
+        path: &str,
+        parameters: Option<&str>,
+    ) -> Result<SubSonicResponse, Box<dyn Error>> {
         let response = self
             .innerClient
-            .get(self.API_ENDPOINT.clone() + path + "?" + &self.get_auth_token())
+            .get(
+                self.API_ENDPOINT.clone()
+                    + path
+                    + "?"
+                    + &self.get_auth_token()
+                    + parameters.unwrap_or(""),
+            )
             .send()
             .await?;
         println!(
             "{}",
-            self.API_ENDPOINT.clone() + path + "?" + &self.get_auth_token()
+            self.API_ENDPOINT.clone()
+                + path
+                + "?"
+                + &self.get_auth_token()
+                + parameters.unwrap_or("")
         );
         if response.status() != StatusCode::OK {
             Err(Box::new(ResponseError::new(
@@ -71,7 +86,7 @@ impl SubsonicClient {
         }
     }
     pub(crate) async fn get_artists(&self) -> Result<Option<ArtistsID3>, Box<dyn Error>> {
-        let response = self.get_response("/getArtists").await?;
+        let response = self.get_response("/getArtists", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::Artists(artists) => Ok(Some(artists)),
@@ -79,7 +94,7 @@ impl SubsonicClient {
         }
     }
     pub(crate) async fn get_genres(&self) -> Result<Option<Genres>, Box<dyn Error>> {
-        let response = self.get_response("/getGenres").await?;
+        let response = self.get_response("/getGenres", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::Genres(genres) => Ok(Some(genres)),
@@ -87,7 +102,7 @@ impl SubsonicClient {
         }
     }
     pub(crate) async fn get_directory(&self) -> Result<Option<Directory>, Box<dyn Error>> {
-        let response = self.get_response("/getMusicDirectory").await?;
+        let response = self.get_response("/getMusicDirectory", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::Directory(directory) => Ok(Some(directory)),
@@ -95,7 +110,7 @@ impl SubsonicClient {
         }
     }
     pub(crate) async fn get_music_folders(&self) -> Result<Option<MusicFolders>, Box<dyn Error>> {
-        let response = self.get_response("/getMusicFolders").await?;
+        let response = self.get_response("/getMusicFolders", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::MusicFolders(music_folders) => Ok(Some(music_folders)),
@@ -103,7 +118,7 @@ impl SubsonicClient {
         }
     }
     pub(crate) async fn get_indexes(&self) -> Result<Option<Indexes>, Box<dyn Error>> {
-        let response = self.get_response("/getIndexes").await?;
+        let response = self.get_response("/getIndexes", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::Indexes(indexes) => Ok(Some(indexes)),
@@ -111,7 +126,7 @@ impl SubsonicClient {
         }
     }
     pub(crate) async fn get_bookmarks(&self) -> Result<Option<Bookmarks>, Box<dyn Error>> {
-        let response = self.get_response("/getBookmarks").await?;
+        let response = self.get_response("/getBookmarks", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::Bookmarks(bookmarks) => Ok(Some(bookmarks)),
@@ -120,7 +135,7 @@ impl SubsonicClient {
     }
 
     pub(crate) async fn get_podcasts(&self) -> Result<Option<Podcasts>, Box<dyn Error>> {
-        let response = self.get_response("/getPodcasts").await?;
+        let response = self.get_response("/getPodcasts", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::Podcasts(podcasts) => Ok(Some(podcasts)),
@@ -128,7 +143,7 @@ impl SubsonicClient {
         }
     }
     pub(crate) async fn get_now_playing(&self) -> Result<Option<NowPlaying>, Box<dyn Error>> {
-        let response = self.get_response("/getNowPlaying").await?;
+        let response = self.get_response("/getNowPlaying", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::NowPlaying(nowPlaying) => Ok(Some(nowPlaying)),
@@ -136,7 +151,7 @@ impl SubsonicClient {
         }
     }
     pub(crate) async fn get_playlists(&self) -> Result<Option<Playlists>, Box<dyn Error>> {
-        let response = self.get_response("/getPlaylists").await?;
+        let response = self.get_response("/getPlaylists", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::Playlists(playlists) => Ok(Some(playlists)),
@@ -144,7 +159,7 @@ impl SubsonicClient {
         }
     }
     pub(crate) async fn get_random_songs(&self) -> Result<Option<RandomSongs>, Box<dyn Error>> {
-        let response = self.get_response("/getRandomSongs").await?;
+        let response = self.get_response("/getRandomSongs", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::RandomSongs(randomSongs) => Ok(Some(randomSongs)),
@@ -154,10 +169,24 @@ impl SubsonicClient {
     pub(crate) async fn get_newest_podcasts(
         &self,
     ) -> Result<Option<NewestPodcasts>, Box<dyn Error>> {
-        let response = self.get_response("/getNewestPodcasts").await?;
+        let response = self.get_response("/getNewestPodcasts", None).await?;
         let value = response.getValue();
         match value {
             ResponseValue::NewestPodcasts(newestPodcasts) => Ok(Some(newestPodcasts)),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) async fn get_album_list_2(
+        &self,
+        type_of_album: AlbumListType,
+    ) -> Result<Option<AlbumList2>, Box<dyn Error>> {
+        let path = "/getAlbumList2".to_owned();
+        let parameters = "&type=".to_owned() + &type_of_album.to_string();
+        let response = self.get_response(&path, Some(&parameters)).await?;
+        let value = response.getValue();
+        match value {
+            ResponseValue::AlbumList2(albumList2) => Ok(Some(albumList2)),
+            ResponseValue::Error(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }

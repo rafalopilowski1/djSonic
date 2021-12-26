@@ -1,3 +1,5 @@
+use data_structure::album::AlbumListType;
+
 use crate::api::subsonic_client::SubsonicClient;
 use std::error::Error;
 
@@ -50,6 +52,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
     if let Some(newestPodcasts) = subsonic_client.get_newest_podcasts().await? {
         println!("{:#?}", newestPodcasts);
+    }
+    if let Some(albumList2) = subsonic_client
+        .get_album_list_2(AlbumListType::Newest)
+        .await?
+    {
+        println!("{:#?}", albumList2);
     }
     Ok(())
 }
