@@ -45,5 +45,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if let Some(playlists) = subsonic_client.get_playlists().await? {
         println!("{:#?}", playlists);
     }
+    if let Some(randomSongs) = subsonic_client.get_random_songs().await? {
+        println!("{:#?}", randomSongs);
+    }
     Ok(())
 }

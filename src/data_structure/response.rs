@@ -29,6 +29,8 @@ use crate::data_structure::podcast::Podcasts;
 
 use serde::Deserialize;
 
+use crate::data_structure::child::RandomSongs;
+
 #[derive(Deserialize, Debug)]
 #[serde(rename = "kebab-case")]
 pub(crate) struct SubSonicResponse {
@@ -71,7 +73,7 @@ pub(crate) enum ResponseValue {
     ChatMessages(Vec<ChatMessage>),
     AlbumList(Vec<Child>),
     AlbumList2(Vec<AlbumID3>),
-    RandomSongs(Vec<Child>),
+    RandomSongs(RandomSongs),
     SongsByGenre(Vec<Child>),
     Lyrics(Lyrics),
     Podcasts(Podcasts),

@@ -107,3 +107,10 @@ pub(crate) struct NowPlayingEntry {
     player_id: u32,
     player_name: Option<String>,
 }
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct RandomSongs {
+    #[serde(rename = "$value")]
+    entries: Vec<Child>,
+}

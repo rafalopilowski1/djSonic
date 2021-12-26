@@ -3,7 +3,7 @@ use reqwest::{Client, StatusCode};
 use std::error::Error;
 use std::io::{BufReader, Cursor};
 
-use crate::data_structure::child::NowPlaying;
+use crate::data_structure::child::{NowPlaying, RandomSongs};
 use crate::data_structure::playlist::Playlists;
 use crate::data_structure::{
     artist::{ArtistsID3, Indexes},
@@ -139,6 +139,14 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             ResponseValue::Playlists(playlists) => Ok(Some(playlists)),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) async fn get_random_songs(&self) -> Result<Option<RandomSongs>, Box<dyn Error>> {
+        let response = self.get_response("/getRandomSongs").await?;
+        let value = response.getValue();
+        match value {
+            ResponseValue::RandomSongs(randomSongs) => Ok(Some(randomSongs)),
             _ => Ok(None),
         }
     }
