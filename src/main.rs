@@ -63,5 +63,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if let Some(value) = subsonic_client.ping().await? {
         println!("{:#?}", value);
     }
+    if let Some(search) = subsonic_client.search3("florence").await? {
+        println!("{:#?}", search);
+    }
     Ok(())
 }

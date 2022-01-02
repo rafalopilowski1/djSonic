@@ -7,6 +7,7 @@ use crate::data_structure::album::{AlbumList2, AlbumListType};
 use crate::data_structure::child::{NowPlaying, RandomSongs};
 use crate::data_structure::playlist::Playlists;
 use crate::data_structure::podcast::NewestPodcasts;
+use crate::data_structure::search::{SearchResult3Enum, SearchResult3};
 use crate::data_structure::{
     artist::{ArtistsID3, Indexes},
     bookmark::Bookmarks,
@@ -214,5 +215,19 @@ impl SubsonicClient {
         let path = "/ping".to_owned();
         let response = self.get_response(&path, None).await?;
         Ok(Some(response))
+    }
+    pub(crate) async fn search3(
+        &self,
+        query: &str,
+    ) -> Result<Option<SearchResult3>, Box<dyn Error>> {
+        let path = "/search3".to_owned();
+        let parameters = "&query=".to_owned() + &query.to_string();
+        let response = self.get_response(&path, Some(&parameters)).await?;
+        let value = response.getValue();
+        match value {
+            Ok(ResponseValue::SearchResult3(search3)) => Ok(Some(search3)),
+            Err(err) => Err(Box::new(err)),
+            _ => Ok(None),
+        }
     }
 }

@@ -14,7 +14,7 @@ use crate::data_structure::{
     music_folder::MusicFolders,
     playlist::{Playlist, Playlists},
     podcast::{NewestPodcasts, Podcasts},
-    search::{SearchResult2, SearchResult3},
+    search::{SearchResult2, SearchResult3Enum},
     share::Share,
     starred::{Starred, Starred2},
     user::User,
@@ -34,6 +34,8 @@ pub(crate) struct SubSonicResponse {
 }
 
 use crate::data_structure::response::Error as ResponseError;
+
+use super::search::SearchResult3;
 
 impl SubSonicResponse {
     pub(crate) fn getValue(self) -> Result<ResponseValue, ResponseError> {
