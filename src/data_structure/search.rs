@@ -23,5 +23,5 @@ pub(crate) enum SearchResult3Enum {
 pub(crate) struct SearchResult3 {
     #[serde(rename = "$value")]
     #[serde(default)]
-    value: Option<SearchResult3Enum>,
+    value: Option<Vec<SearchResult3Enum>>,
 }
