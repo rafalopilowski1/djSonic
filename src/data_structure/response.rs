@@ -27,14 +27,24 @@ use serde::Deserialize;
 #[serde(rename = "kebab-case")]
 pub(crate) struct SubSonicResponse {
     #[serde(rename = "$value")]
-    value: ResponseValue,
-    status: String,  // ResponseStatus: {ok, failed}
-    version: String, // Version: regex restriction: `\d+\.\d+\.\d+`
+    #[serde(default)]
+    value: Option<ResponseValue>,
+    status: String,      // ResponseStatus: {ok, failed}
+    pub version: String, // Version: regex restriction: `\d+\.\d+\.\d+`
 }
 
+use crate::data_structure::response::Error as ResponseError;
+
 impl SubSonicResponse {
-    pub(crate) fn getValue(self) -> ResponseValue {
-        self.value
+    pub(crate) fn getValue(self) -> Result<ResponseValue, ResponseError> {
+        if let Some(data) = self.value {
+            match data {
+                ResponseValue::Error(err) => Err(err),
+                _ => Ok(data),
+            }
+        } else {
+            Err(ResponseError::new(0, "Empty / invalid body!"))
+        }
     }
 }
 

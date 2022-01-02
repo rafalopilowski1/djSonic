@@ -12,7 +12,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let user = dotenv::var("SUBSONIC_USER")?;
     let password = dotenv::var("SUBSONIC_PASSWORD")?;
 
-    let subsonic_client = SubsonicClient::new(&API_ENDPOINT, &user, &password);
+    let mut subsonic_client = SubsonicClient::new(&API_ENDPOINT, &user, &password);
+    SubsonicClient::init(&mut subsonic_client).await;
 
     if let Some(artists) = subsonic_client.get_artists().await? {
         println!("{:#?}", artists);
@@ -58,6 +59,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await?
     {
         println!("{:#?}", albumList2);
+    }
+    if let Some(value) = subsonic_client.ping().await? {
+        println!("{:#?}", value);
     }
     Ok(())
 }

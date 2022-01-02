@@ -22,6 +22,7 @@ pub(crate) struct SubsonicClient {
     API_ENDPOINT: String,
     user: String,
     password: String,
+    version: Option<String>,
 }
 impl SubsonicClient {
     pub(crate) fn new(API_ENDPOINT: &str, user: &str, password: &str) -> Self {
@@ -30,6 +31,14 @@ impl SubsonicClient {
             API_ENDPOINT: API_ENDPOINT.to_owned(),
             user: user.to_owned(),
             password: password.to_owned(),
+            version: None,
+        }
+    }
+    pub(crate) async fn init(&mut self) {
+        if let Ok(Some(info)) = self.ping().await {
+            self.version = Some(info.version);
+        } else {
+            panic!("Invalid server response!");
         }
     }
     fn get_auth_token(&self) -> String {
@@ -89,8 +98,8 @@ impl SubsonicClient {
         let response = self.get_response("/getArtists", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::Artists(artists) => Ok(Some(artists)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::Artists(artists)) => Ok(Some(artists)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -98,8 +107,8 @@ impl SubsonicClient {
         let response = self.get_response("/getGenres", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::Genres(genres) => Ok(Some(genres)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::Genres(genres)) => Ok(Some(genres)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -107,8 +116,8 @@ impl SubsonicClient {
         let response = self.get_response("/getMusicDirectory", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::Directory(directory) => Ok(Some(directory)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::Directory(directory)) => Ok(Some(directory)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -116,8 +125,8 @@ impl SubsonicClient {
         let response = self.get_response("/getMusicFolders", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::MusicFolders(music_folders) => Ok(Some(music_folders)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::MusicFolders(music_folders)) => Ok(Some(music_folders)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -125,8 +134,8 @@ impl SubsonicClient {
         let response = self.get_response("/getIndexes", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::Indexes(indexes) => Ok(Some(indexes)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::Indexes(indexes)) => Ok(Some(indexes)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -134,8 +143,8 @@ impl SubsonicClient {
         let response = self.get_response("/getBookmarks", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::Bookmarks(bookmarks) => Ok(Some(bookmarks)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::Bookmarks(bookmarks)) => Ok(Some(bookmarks)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -144,8 +153,8 @@ impl SubsonicClient {
         let response = self.get_response("/getPodcasts", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::Podcasts(podcasts) => Ok(Some(podcasts)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::Podcasts(podcasts)) => Ok(Some(podcasts)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -153,8 +162,8 @@ impl SubsonicClient {
         let response = self.get_response("/getNowPlaying", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::NowPlaying(nowPlaying) => Ok(Some(nowPlaying)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::NowPlaying(nowPlaying)) => Ok(Some(nowPlaying)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -162,8 +171,8 @@ impl SubsonicClient {
         let response = self.get_response("/getPlaylists", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::Playlists(playlists) => Ok(Some(playlists)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::Playlists(playlists)) => Ok(Some(playlists)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -171,8 +180,8 @@ impl SubsonicClient {
         let response = self.get_response("/getRandomSongs", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::RandomSongs(randomSongs) => Ok(Some(randomSongs)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::RandomSongs(randomSongs)) => Ok(Some(randomSongs)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -182,8 +191,8 @@ impl SubsonicClient {
         let response = self.get_response("/getNewestPodcasts", None).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::NewestPodcasts(newestPodcasts) => Ok(Some(newestPodcasts)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::NewestPodcasts(newestPodcasts)) => Ok(Some(newestPodcasts)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
     }
@@ -196,9 +205,14 @@ impl SubsonicClient {
         let response = self.get_response(&path, Some(&parameters)).await?;
         let value = response.getValue();
         match value {
-            ResponseValue::AlbumList2(albumList2) => Ok(Some(albumList2)),
-            ResponseValue::Error(err) => Err(Box::new(err)),
+            Ok(ResponseValue::AlbumList2(albumList2)) => Ok(Some(albumList2)),
+            Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
+    }
+    pub(crate) async fn ping(&self) -> Result<Option<SubSonicResponse>, Box<dyn Error>> {
+        let path = "/ping".to_owned();
+        let response = self.get_response(&path, None).await?;
+        Ok(Some(response))
     }
 }
