@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::data_structure::child::Child;
+use crate::{api::traits::CoverArt, data_structure::child::Child};
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Playlist {
@@ -15,6 +15,11 @@ pub(crate) struct Playlist {
     created: String,
     changed: String,
     cover_art: Option<String>,
+}
+impl CoverArt for Playlist {
+    fn get_cover_art_id(&self) -> Option<&str> {
+        self.cover_art.as_deref()
+    }
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

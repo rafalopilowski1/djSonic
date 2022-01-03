@@ -1,3 +1,4 @@
+use bytes::Bytes;
 use rand::prelude::*;
 use reqwest::{Client, StatusCode};
 use std::error::Error;
@@ -18,6 +19,8 @@ use crate::data_structure::{
     podcast::Podcasts,
     response::{Error as ResponseError, ResponseValue, SubSonicResponse},
 };
+
+use super::traits::CoverArt;
 
 pub(crate) struct SubsonicClient {
     inner_client: Client,
@@ -58,11 +61,11 @@ impl SubsonicClient {
         );
         result
     }
-    async fn get_response(
+    async fn get_response_bytes(
         &self,
         path: &str,
         parameters: Option<&str>,
-    ) -> Result<SubSonicResponse, Box<dyn Error>> {
+    ) -> Result<Bytes, Box<dyn Error>> {
         let response = self
             .inner_client
             .get(
@@ -89,19 +92,31 @@ impl SubsonicClient {
             )))
         } else {
             let response_bytes = response.bytes().await?;
-
-            // TODO: Is using in-memory buffer a good idea for response bodies?
-            let buf_read = BufReader::new(Cursor::new(response_bytes));
-            let mut de = quick_xml::de::Deserializer::from_reader(buf_read);
-            let response: Result<SubSonicResponse, _> = serde_path_to_error::deserialize(&mut de);
-            match response {
-                Ok(res) => Ok(res),
-                Err(err) => {
-                    let path = err.path().to_string();
-                    println!("{}", path);
-                    Err(Box::new(err))
+            Ok(response_bytes)
+        }
+    }
+    async fn get_response(
+        &self,
+        path: &str,
+        parameters: Option<&str>,
+    ) -> Result<SubSonicResponse, Box<dyn Error>> {
+        match self.get_response_bytes(path, parameters).await {
+            Ok(response_bytes) => {
+                // TODO: Is using in-memory buffer a good idea for response bodies?
+                let buf_read = BufReader::new(Cursor::new(response_bytes));
+                let mut de = quick_xml::de::Deserializer::from_reader(buf_read);
+                let response: Result<SubSonicResponse, _> =
+                    serde_path_to_error::deserialize(&mut de);
+                match response {
+                    Ok(res) => Ok(res),
+                    Err(err) => {
+                        let path = err.path().to_string();
+                        println!("{}", path);
+                        Err(Box::new(err))
+                    }
                 }
             }
+            Err(err) => Err(err),
         }
     }
     pub(crate) async fn get_artists(&self) -> Result<Option<ArtistsID3>, Box<dyn Error>> {
@@ -248,6 +263,20 @@ impl SubsonicClient {
             Ok(ResponseValue::User(user)) => Ok(Some(user)),
             Err(err) => Err(Box::new(err)),
             _ => Ok(None),
+        }
+    }
+    pub(crate) async fn getCoverArt(
+        &self,
+        item: impl CoverArt,
+    ) -> Result<Option<Bytes>, Box<dyn Error>> {
+        if let Some(cover_art_id) = item.get_cover_art_id() {
+            let path = "/getCoverArt".to_owned();
+            let parameters = "&id=".to_owned() + cover_art_id;
+            let response_bytes = self.get_response_bytes(&path, Some(&parameters)).await?;
+
+            Ok(Some(response_bytes))
+        } else {
+            Ok(None)
         }
     }
 }

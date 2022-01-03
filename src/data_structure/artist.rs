@@ -1,4 +1,7 @@
-use crate::data_structure::{album::AlbumID3, child::Child};
+use crate::{
+    api::traits::CoverArt,
+    data_structure::{album::AlbumID3, child::Child},
+};
 
 use serde::Deserialize;
 
@@ -44,6 +47,11 @@ pub(crate) struct ArtistID3 {
     artist_image_url: Option<String>,
     album_count: u32,
     starred: Option<String>,
+}
+impl CoverArt for ArtistID3 {
+    fn get_cover_art_id(&self) -> Option<&str> {
+        self.cover_art.as_deref()
+    }
 }
 
 #[derive(Deserialize, Debug)]

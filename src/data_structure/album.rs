@@ -1,8 +1,8 @@
-use std::borrow::Borrow;
 use std::fmt::Display;
 
 use serde::Deserialize;
 
+use crate::api::traits::CoverArt;
 use crate::data_structure::child::Child;
 use crate::data_structure::genre::Genre;
 
@@ -21,6 +21,11 @@ pub(crate) struct AlbumID3 {
     starred: Option<String>,
     year: Option<u32>,
     genre: Option<String>,
+}
+impl CoverArt for AlbumID3 {
+    fn get_cover_art_id(&self) -> Option<&str> {
+        self.cover_art.as_deref()
+    }
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

@@ -3,6 +3,8 @@ use serde::Deserialize;
 // Unnessary boilerplate cause by [this issue #2117](https://github.com/serde-rs/serde/issues/2117).
 
 use serde_with::{serde_as, DisplayFromStr};
+
+use crate::api::traits::CoverArt;
 #[serde_as]
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -83,6 +85,11 @@ pub(crate) struct Child {
     #[serde_as(as = "Option<DisplayFromStr>")]
     #[serde(default)]
     original_height: Option<u32>,
+}
+impl CoverArt for Child {
+    fn get_cover_art_id(&self) -> Option<&str> {
+        self.cover_art.as_deref()
+    }
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

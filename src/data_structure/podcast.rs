@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::data_structure::child::Child;
+use crate::{api::traits::CoverArt, data_structure::child::Child};
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -38,6 +38,11 @@ pub(crate) struct PodcastChannel {
     original_image_url: Option<String>,
     status: PodcastStatus,
     error_message: Option<String>,
+}
+impl CoverArt for PodcastChannel {
+    fn get_cover_art_id(&self) -> Option<&str> {
+        self.cover_art.as_deref()
+    }
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
