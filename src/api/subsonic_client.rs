@@ -7,7 +7,7 @@ use crate::data_structure::album::{AlbumList2, AlbumListType};
 use crate::data_structure::child::{NowPlaying, RandomSongs};
 use crate::data_structure::playlist::Playlists;
 use crate::data_structure::podcast::NewestPodcasts;
-use crate::data_structure::search::{SearchResult3Enum, SearchResult3};
+use crate::data_structure::search::SearchResult3;
 use crate::data_structure::{
     artist::{ArtistsID3, Indexes},
     bookmark::Bookmarks,
@@ -19,21 +19,23 @@ use crate::data_structure::{
 };
 
 pub(crate) struct SubsonicClient {
-    innerClient: Client,
+    inner_client: Client,
     API_ENDPOINT: String,
     user: String,
     password: String,
     version: Option<String>,
 }
 impl SubsonicClient {
-    pub(crate) fn new(API_ENDPOINT: &str, user: &str, password: &str) -> Self {
-        Self {
-            innerClient: Client::new(),
+    pub(crate) async fn new(API_ENDPOINT: &str, user: &str, password: &str) -> Self {
+        let mut client_to_init = Self {
+            inner_client: Client::new(),
             API_ENDPOINT: API_ENDPOINT.to_owned(),
             user: user.to_owned(),
             password: password.to_owned(),
             version: None,
-        }
+        };
+        client_to_init.init().await;
+        client_to_init
     }
     pub(crate) async fn init(&mut self) {
         if let Ok(Some(info)) = self.ping().await {
@@ -46,7 +48,13 @@ impl SubsonicClient {
         let random: String = thread_rng().gen::<u64>().to_string();
         let salted_pass = self.password.clone() + &random;
         let hash = format!("{:x}", md5::compute(&salted_pass));
-        let result = format!("u={0}&t={1}&s={2}", &self.user, &hash, &random);
+        let result = format!(
+            "u={0}&t={1}&s={2}&v={3}",
+            &self.user,
+            &hash,
+            &random,
+            self.version.as_ref().unwrap_or(&"".to_string())
+        );
         result
     }
     async fn get_response(
@@ -55,7 +63,7 @@ impl SubsonicClient {
         parameters: Option<&str>,
     ) -> Result<SubSonicResponse, Box<dyn Error>> {
         let response = self
-            .innerClient
+            .inner_client
             .get(
                 self.API_ENDPOINT.clone()
                     + path

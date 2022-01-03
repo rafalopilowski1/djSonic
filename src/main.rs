@@ -12,8 +12,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let user = dotenv::var("SUBSONIC_USER")?;
     let password = dotenv::var("SUBSONIC_PASSWORD")?;
 
-    let mut subsonic_client = SubsonicClient::new(&API_ENDPOINT, &user, &password);
-    SubsonicClient::init(&mut subsonic_client).await;
+    let subsonic_client = SubsonicClient::new(&API_ENDPOINT, &user, &password).await;
 
     if let Some(artists) = subsonic_client.get_artists().await? {
         println!("{:#?}", artists);
