@@ -8,6 +8,7 @@ use crate::data_structure::child::{NowPlaying, RandomSongs};
 use crate::data_structure::playlist::Playlists;
 use crate::data_structure::podcast::NewestPodcasts;
 use crate::data_structure::search::SearchResult3;
+use crate::data_structure::user::User;
 use crate::data_structure::{
     artist::{ArtistsID3, Indexes},
     bookmark::Bookmarks,
@@ -84,7 +85,7 @@ impl SubsonicClient {
         if response.status() != StatusCode::OK {
             Err(Box::new(ResponseError::new(
                 response.status().as_u16(),
-                response.status().as_str(),
+                response.status().canonical_reason().unwrap(),
             )))
         } else {
             let response_bytes = response.bytes().await?;
@@ -234,6 +235,17 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             Ok(ResponseValue::SearchResult3(search3)) => Ok(Some(search3)),
+            Err(err) => Err(Box::new(err)),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) async fn getUser(&self) -> Result<Option<User>, Box<dyn Error>> {
+        let path = "/getUser".to_owned();
+        let parameters = "&username=".to_owned() + &self.user;
+        let response = self.get_response(&path, Some(&parameters)).await?;
+        let value = response.getValue();
+        match value {
+            Ok(ResponseValue::User(user)) => Ok(Some(user)),
             Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
