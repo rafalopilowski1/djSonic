@@ -91,6 +91,7 @@ pub(crate) enum ResponseValue {
     Starred2(Starred2),
     AlbumInfo(AlbumInfo),
     ArtistInfo(ArtistInfo),
+    #[serde(rename = "artist-info2")]
     ArtistInfo2(ArtistInfo2),
     SimilarSongs(Vec<Child>),
     SimilarSongs2(Vec<Child>),

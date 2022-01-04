@@ -55,7 +55,11 @@ impl CoverArt for ArtistID3 {
         self.cover_art.as_deref()
     }
 }
-
+impl ArtistID3 {
+    pub(crate) fn get_id(&self) -> &str {
+        self.id.as_str()
+    }
+}
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ArtistInfoBase {
@@ -75,8 +79,14 @@ pub(crate) struct ArtistInfo {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ArtistInfo2 {
-    base: ArtistInfoBase,
-    similar_artists: Vec<ArtistID3>,
+    biography: Option<String>,
+    music_brainz_id: Option<String>,
+    last_fm_url: Option<String>,
+    small_image_url: Option<String>,
+    medium_image_url: Option<String>,
+    large_image_url: Option<String>,
+    #[serde(rename = "$value")]
+    similar_artists: Option<Vec<ArtistID3>>,
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

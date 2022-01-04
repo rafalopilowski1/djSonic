@@ -72,6 +72,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // }
     if let Some(artist) = subsonic_client.get_artist(1).await? {
         println!("{:#?}", artist);
+        if let Some(artistInfo2) = subsonic_client.get_artist_info_2(artist).await? {
+            println!("{:#?}", artistInfo2);
+        }
     }
     Ok(())
 }
