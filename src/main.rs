@@ -12,7 +12,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let user = dotenv::var("SUBSONIC_USER")?;
     let password = dotenv::var("SUBSONIC_PASSWORD")?;
 
-    let subsonic_client = SubsonicClient::new(&API_ENDPOINT, &user, &password).await;
+    let subsonic_client = SubsonicClient::new(&API_ENDPOINT, &user, &password).await?;
 
     // let artists = subsonic_client.get_artists().await;
     // println!("{:#?}", artists);
@@ -45,7 +45,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // let user = subsonic_client.getUser().await;
     // println!("{:#?}", user);
 
-    let searchResult = subsonic_client.search3("25").await;
+    let searchResult = subsonic_client.search3("piątek").await;
     println!("{:#?}", searchResult);
 
     if let Ok(Some(search)) = searchResult {

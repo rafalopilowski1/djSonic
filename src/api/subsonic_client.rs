@@ -30,7 +30,11 @@ pub(crate) struct SubsonicClient {
     version: Option<String>,
 }
 impl SubsonicClient {
-    pub(crate) async fn new(API_ENDPOINT: &str, user: &str, password: &str) -> Self {
+    pub(crate) async fn new(
+        API_ENDPOINT: &str,
+        user: &str,
+        password: &str,
+    ) -> Result<Self, Box<dyn Error>> {
         let mut client_to_init = Self {
             inner_client: Client::new(),
             API_ENDPOINT: API_ENDPOINT.to_owned(),
@@ -38,15 +42,14 @@ impl SubsonicClient {
             password: password.to_owned(),
             version: None,
         };
-        client_to_init.init().await;
-        client_to_init
+        client_to_init.init().await?;
+        Ok(client_to_init)
     }
-    pub(crate) async fn init(&mut self) {
-        if let Ok(Some(info)) = self.ping().await {
+    pub(crate) async fn init(&mut self) -> Result<(), Box<dyn Error>> {
+        if let Some(info) = self.ping().await? {
             self.version = Some(info.version);
-        } else {
-            panic!("Invalid server response!");
-        }
+        };
+        Ok(())
     }
     fn get_auth_token(&self) -> String {
         let random: String = thread_rng().gen::<u64>().to_string();
