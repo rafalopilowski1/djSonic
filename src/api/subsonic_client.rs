@@ -1,3 +1,5 @@
+use crate::data_structure::child::Child;
+
 use crate::data_structure::playlist::Playlist;
 
 use bytes::Bytes;
@@ -294,6 +296,18 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             Ok(ResponseValue::Playlist(playlist)) => Ok(Some(playlist)),
+            Err(err) => Err(Box::new(err)),
+            _ => Ok(None),
+        }
+    }
+
+    pub(crate) async fn get_song(&self, query_id: u16) -> Result<Option<Child>, Box<dyn Error>> {
+        let path = "/getSong".to_owned();
+        let parameters = "&id=".to_owned() + &query_id.to_string();
+        let response = self.get_response(&path, Some(&parameters)).await?;
+        let value = response.getValue();
+        match value {
+            Ok(ResponseValue::Song(child)) => Ok(Some(child)),
             Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }

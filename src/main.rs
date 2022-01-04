@@ -30,12 +30,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // println!("{:#?}", podcasts);
     // let nowPlaying = subsonic_client.get_now_playing().await;
     // println!("{:#?}", nowPlaying);
-    let playlists = subsonic_client.get_playlists().await;
-    //println!("{:#?}", playlists);
-
-    if let Some(playlist) = subsonic_client.get_playlist(1).await? {
-        println!("{:#?}", playlist);
-    };
+    // let playlists = subsonic_client.get_playlists().await;
+    // println!("{:#?}", playlists);
+    // if let Some(playlist) = subsonic_client.get_playlist(1).await? {
+    //     println!("{:#?}", playlist);
+    // };
     // let randomSongs = subsonic_client.get_random_songs().await;
     // println!("{:#?}", randomSongs);
     // let newestPodcasts = subsonic_client.get_newest_podcasts().await;
@@ -64,6 +63,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //         }
     //     }
     // };
+
+    // if let Some(song) = subsonic_client.get_song(1).await? {
+    //     println!("{:#?}", song);
+    // }
 
     Ok(())
 }
