@@ -49,38 +49,37 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // let user = subsonic_client.getUser().await;
     // println!("{:#?}", user);
 
-    // let searchResult = subsonic_client.search3("piątek").await;
-    // println!("{:#?}", searchResult);
+    let searchResult = subsonic_client.search3("25").await;
+    println!("{:#?}", searchResult);
 
-    // if let Ok(Some(search)) = searchResult {
-    //     for element in search.getValues().unwrap() {
-    //         if let Some((cover_art_bytes, cover_art_id)) =
-    //             subsonic_client.get_cover_art(element).await?
-    //         {
-    //             // cover art - JPGs as binary
-    //             let mut file = File::create(format!("{}.jpg", cover_art_id)).await?;
-    //             file.write_all(&cover_art_bytes).await?;
-    //             file.sync_all().await?;
-    //         }
-    //     }
-    // };
-
-    if let Some(song) = subsonic_client.get_song(1).await? {
-        println!("{:#?}", song);
-        if let Some((song_stream, file_name)) = subsonic_client.stream(song).await? {
-            let mut file = File::create(file_name).await?;
-            file.write_all(&song_stream).await?;
-            file.sync_all().await?
+    if let Ok(Some(search)) = searchResult {
+        for element in search.getValues().unwrap() {
+            if let Some((cover_art_bytes, file_path)) =
+                subsonic_client.get_cover_art(element).await?
+            {
+                let mut file = File::create(format!("{}.jpg", file_path)).await?;
+                file.write_all(&cover_art_bytes).await?;
+                file.sync_all().await?;
+            }
         }
-    }
+    };
+
+    // if let Some(song) = subsonic_client.get_song(1).await? {
+    //     println!("{:#?}", song);
+    //     if let Some((song_stream, file_name)) = subsonic_client.stream(song).await? {
+    //         let mut file = File::create(file_name).await?;
+    //         file.write_all(&song_stream).await?;
+    //         file.sync_all().await?
+    //     }
+    // }
     // if let Some(song) = subsonic_client.get_album(1).await? {
     //     println!("{:#?}", song);
     // }
-    if let Some(artist) = subsonic_client.get_artist(1).await? {
-        println!("{:#?}", artist);
-        if let Some(artistInfo2) = subsonic_client.get_artist_info_2(artist).await? {
-            println!("{:#?}", artistInfo2);
-        }
-    }
+    // if let Some(artist) = subsonic_client.get_artist(1).await? {
+    //     println!("{:#?}", artist);
+    //     if let Some(artistInfo2) = subsonic_client.get_artist_info_2(artist).await? {
+    //         println!("{:#?}", artistInfo2);
+    //     }
+    // }
     Ok(())
 }

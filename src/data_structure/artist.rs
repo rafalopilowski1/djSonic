@@ -42,7 +42,8 @@ pub(crate) struct IndexID3 {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ArtistID3 {
     #[serde(rename = "$value")]
-    albums: Vec<AlbumID3>,
+    #[serde(default)]
+    albums: Option<Vec<AlbumID3>>,
     id: String,
     name: String,
     cover_art: Option<String>,
