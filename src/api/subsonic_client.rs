@@ -8,7 +8,7 @@ use reqwest::{Client, StatusCode};
 use std::error::Error;
 use std::io::{BufReader, Cursor};
 
-use crate::data_structure::album::{AlbumList2, AlbumListType};
+use crate::data_structure::album::{AlbumID3, AlbumList2, AlbumListType};
 use crate::data_structure::child::{NowPlaying, RandomSongs};
 use crate::data_structure::playlist::Playlists;
 use crate::data_structure::podcast::NewestPodcasts;
@@ -308,6 +308,20 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             Ok(ResponseValue::Song(child)) => Ok(Some(child)),
+            Err(err) => Err(Box::new(err)),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) async fn get_album(
+        &self,
+        query_id: u16,
+    ) -> Result<Option<AlbumID3>, Box<dyn Error>> {
+        let path = "/getAlbum".to_owned();
+        let parameters = "&id=".to_owned() + &query_id.to_string();
+        let response = self.get_response(&path, Some(&parameters)).await?;
+        let value = response.getValue();
+        match value {
+            Ok(ResponseValue::Album(album)) => Ok(Some(album)),
             Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }

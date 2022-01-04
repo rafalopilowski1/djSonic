@@ -9,6 +9,9 @@ use crate::data_structure::genre::Genre;
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct AlbumID3 {
+    #[serde(rename = "$value")]
+    entries: Option<Vec<Child>>,
+
     id: String,
     name: String,
     artist: Option<String>,
@@ -66,12 +69,6 @@ impl Display for AlbumListType {
     }
 }
 
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct AlbumWithSongsID3 {
-    album: AlbumID3,
-    songs: Vec<Child>,
-}
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct AlbumInfo {
