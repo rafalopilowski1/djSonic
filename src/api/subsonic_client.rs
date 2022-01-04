@@ -1,3 +1,5 @@
+use crate::data_structure::playlist::Playlist;
+
 use bytes::Bytes;
 use rand::prelude::*;
 use reqwest::{Client, StatusCode};
@@ -279,6 +281,21 @@ impl SubsonicClient {
             Ok(Some((response_bytes, file_path)))
         } else {
             Ok(None)
+        }
+    }
+
+    pub(crate) async fn get_playlist(
+        &self,
+        query_id: u16,
+    ) -> Result<Option<Playlist>, Box<dyn Error>> {
+        let path = "/getPlaylist".to_owned();
+        let parameters = "&id=".to_owned() + &query_id.to_string();
+        let response = self.get_response(&path, Some(&parameters)).await?;
+        let value = response.getValue();
+        match value {
+            Ok(ResponseValue::Playlist(playlist)) => Ok(Some(playlist)),
+            Err(err) => Err(Box::new(err)),
+            _ => Ok(None),
         }
     }
 }

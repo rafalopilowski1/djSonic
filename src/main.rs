@@ -30,8 +30,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // println!("{:#?}", podcasts);
     // let nowPlaying = subsonic_client.get_now_playing().await;
     // println!("{:#?}", nowPlaying);
-    // let playlists = subsonic_client.get_playlists().await;
-    // println!("{:#?}", playlists);
+    let playlists = subsonic_client.get_playlists().await;
+    //println!("{:#?}", playlists);
+
+    if let Some(playlist) = subsonic_client.get_playlist(1).await? {
+        println!("{:#?}", playlist);
+    };
     // let randomSongs = subsonic_client.get_random_songs().await;
     // println!("{:#?}", randomSongs);
     // let newestPodcasts = subsonic_client.get_newest_podcasts().await;
@@ -45,21 +49,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // let user = subsonic_client.getUser().await;
     // println!("{:#?}", user);
 
-    let searchResult = subsonic_client.search3("piątek").await;
-    println!("{:#?}", searchResult);
+    // let searchResult = subsonic_client.search3("piątek").await;
+    // println!("{:#?}", searchResult);
 
-    if let Ok(Some(search)) = searchResult {
-        for element in search.getValues().unwrap() {
-            if let Some((cover_art_bytes, cover_art_id)) =
-                subsonic_client.get_cover_art(element).await?
-            {
-                // cover art - JPGs as binary
-                let mut file = File::create(format!("{}.jpg", cover_art_id)).await?;
-                file.write_all(&cover_art_bytes).await?;
-                file.sync_all().await?;
-            }
-        }
-    };
+    // if let Ok(Some(search)) = searchResult {
+    //     for element in search.getValues().unwrap() {
+    //         if let Some((cover_art_bytes, cover_art_id)) =
+    //             subsonic_client.get_cover_art(element).await?
+    //         {
+    //             // cover art - JPGs as binary
+    //             let mut file = File::create(format!("{}.jpg", cover_art_id)).await?;
+    //             file.write_all(&cover_art_bytes).await?;
+    //             file.sync_all().await?;
+    //         }
+    //     }
+    // };
 
     Ok(())
 }

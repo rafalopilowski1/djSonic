@@ -4,7 +4,8 @@ use crate::{api::traits::CoverArt, data_structure::child::Child};
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Playlist {
-    allowed_users: Vec<String>,
+    #[serde(rename = "$value")]
+    entries: Option<Vec<Child>>,
     id: String,
     name: String,
     comment: Option<String>,
@@ -13,7 +14,7 @@ pub(crate) struct Playlist {
     song_count: u32,
     duration: u32,
     created: String,
-    changed: String,
+    changed: Option<String>,
     cover_art: Option<String>,
 }
 impl CoverArt for Playlist {
@@ -21,12 +22,7 @@ impl CoverArt for Playlist {
         self.cover_art.as_deref()
     }
 }
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct PlaylistWithSongs {
-    playlist: Playlist,
-    entries: Vec<Child>,
-}
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Playlists {
