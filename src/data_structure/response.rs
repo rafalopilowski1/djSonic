@@ -1,8 +1,9 @@
+use crate::data_structure::artist::ArtistID3;
 use std::fmt::Display;
 
 use crate::data_structure::{
     album::{AlbumID3, AlbumInfo, AlbumList2},
-    artist::{ArtistInfo, ArtistInfo2, ArtistWithAlbumsID3, ArtistsID3, Indexes},
+    artist::{ArtistInfo, ArtistInfo2, ArtistsID3, Indexes},
     bookmark::Bookmarks,
     chat_message::ChatMessage,
     child::{Child, NowPlaying, RandomSongs},
@@ -58,7 +59,7 @@ pub(crate) enum ResponseValue {
     Directory(Directory),
     Genres(Genres),
     Artists(ArtistsID3),
-    Artist(ArtistWithAlbumsID3),
+    Artist(ArtistID3),
     Album(AlbumID3),
     Song(Child),
     Videos(Vec<Child>),

@@ -1,3 +1,4 @@
+use crate::data_structure::artist::ArtistID3;
 use crate::data_structure::child::Child;
 
 use crate::data_structure::playlist::Playlist;
@@ -322,6 +323,20 @@ impl SubsonicClient {
         let value = response.getValue();
         match value {
             Ok(ResponseValue::Album(album)) => Ok(Some(album)),
+            Err(err) => Err(Box::new(err)),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) async fn get_artist(
+        &self,
+        query_id: u16,
+    ) -> Result<Option<ArtistID3>, Box<dyn Error>> {
+        let path = "/getArtist".to_owned();
+        let parameters = "&id=".to_owned() + &query_id.to_string();
+        let response = self.get_response(&path, Some(&parameters)).await?;
+        let value = response.getValue();
+        match value {
+            Ok(ResponseValue::Artist(artist)) => Ok(Some(artist)),
             Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }

@@ -67,8 +67,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // if let Some(song) = subsonic_client.get_song(1).await? {
     //     println!("{:#?}", song);
     // }
-    if let Some(song) = subsonic_client.get_album(1).await? {
-        println!("{:#?}", song);
+    // if let Some(song) = subsonic_client.get_album(1).await? {
+    //     println!("{:#?}", song);
+    // }
+    if let Some(artist) = subsonic_client.get_artist(1).await? {
+        println!("{:#?}", artist);
     }
     Ok(())
 }
