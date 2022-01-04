@@ -52,13 +52,11 @@ impl SubsonicClient {
         let random: String = thread_rng().gen::<u64>().to_string();
         let salted_pass = self.password.clone() + &random;
         let hash = format!("{:x}", md5::compute(&salted_pass));
-        let result = format!(
-            "u={0}&t={1}&s={2}&v={3}",
-            &self.user,
-            &hash,
-            &random,
-            self.version.as_ref().unwrap_or(&"".to_string())
-        );
+        let mut result = format!("u={0}&t={1}&s={2}", &self.user, &hash, &random,);
+        if let Some(version) = &self.version {
+            let version_param = format!("&v={}", version);
+            result += &version_param;
+        }
         result
     }
     async fn get_response_bytes(
@@ -265,16 +263,17 @@ impl SubsonicClient {
             _ => Ok(None),
         }
     }
-    pub(crate) async fn getCoverArt(
+    pub(crate) async fn get_cover_art(
         &self,
         item: impl CoverArt,
-    ) -> Result<Option<Bytes>, Box<dyn Error>> {
+    ) -> Result<Option<(Bytes, String)>, Box<dyn Error>> {
         if let Some(cover_art_id) = item.get_cover_art_id() {
             let path = "/getCoverArt".to_owned();
             let parameters = "&id=".to_owned() + cover_art_id;
             let response_bytes = self.get_response_bytes(&path, Some(&parameters)).await?;
+            let file_path = cover_art_id.to_owned();
 
-            Ok(Some(response_bytes))
+            Ok(Some((response_bytes, file_path)))
         } else {
             Ok(None)
         }

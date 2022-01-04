@@ -49,11 +49,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("{:#?}", searchResult);
 
     if let Ok(Some(search)) = searchResult {
-        let element = search.getValues().unwrap().get(0).unwrap();
-        if let Some(cover_art_bytes) = subsonic_client.getCoverArt(element).await? {
-            let mut file = File::create("test.jpg").await?;
-            file.write_all(&cover_art_bytes).await?;
-            file.sync_all().await?;
+        for element in search.getValues().unwrap() {
+            if let Some((cover_art_bytes, cover_art_id)) =
+                subsonic_client.get_cover_art(element).await?
+            {
+                // cover art - JPGs as binary
+                let mut file = File::create(format!("{}.jpg", cover_art_id)).await?;
+                file.write_all(&cover_art_bytes).await?;
+                file.sync_all().await?;
+            }
         }
     };
 
