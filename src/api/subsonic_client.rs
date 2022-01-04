@@ -5,6 +5,7 @@ use crate::data_structure::playlist::Playlist;
 
 use bytes::Bytes;
 use rand::prelude::*;
+use reqwest::header::CONTENT_DISPOSITION;
 use reqwest::{Client, StatusCode};
 use std::error::Error;
 use std::io::{BufReader, Cursor};
@@ -25,7 +26,7 @@ use crate::data_structure::{
     response::{Error as ResponseError, ResponseValue, SubSonicResponse},
 };
 
-use super::traits::CoverArt;
+use super::traits::{CoverArt, Streamable};
 
 pub(crate) struct SubsonicClient {
     inner_client: Client,
@@ -71,7 +72,7 @@ impl SubsonicClient {
         &self,
         path: &str,
         parameters: Option<&str>,
-    ) -> Result<Bytes, Box<dyn Error>> {
+    ) -> Result<(Bytes, Option<String>), Box<dyn Error>> {
         let response = self
             .inner_client
             .get(
@@ -97,8 +98,19 @@ impl SubsonicClient {
                 response.status().canonical_reason().unwrap(),
             )))
         } else {
-            let response_bytes = response.bytes().await?;
-            Ok(response_bytes)
+            let response_headers = response.headers();
+
+            if let Some(header_value) = response_headers.get(CONTENT_DISPOSITION) {
+                let mut file_name = header_value.to_str()?.to_string();
+                file_name.replace_range(0..29, "");
+                file_name = url_escape::decode(&file_name).to_string();
+                println!("{}", file_name);
+                let response_bytes = response.bytes().await?;
+                Ok((response_bytes, Some(file_name)))
+            } else {
+                let response_bytes = response.bytes().await?;
+                Ok((response_bytes, None))
+            }
         }
     }
     async fn get_response(
@@ -107,7 +119,7 @@ impl SubsonicClient {
         parameters: Option<&str>,
     ) -> Result<SubSonicResponse, Box<dyn Error>> {
         match self.get_response_bytes(path, parameters).await {
-            Ok(response_bytes) => {
+            Ok((response_bytes, header_map)) => {
                 // TODO: Is using in-memory buffer a good idea for response bodies?
                 let buf_read = BufReader::new(Cursor::new(response_bytes));
                 let mut de = quick_xml::de::Deserializer::from_reader(buf_read);
@@ -278,7 +290,7 @@ impl SubsonicClient {
         if let Some(cover_art_id) = item.get_cover_art_id() {
             let path = "/getCoverArt".to_owned();
             let parameters = "&id=".to_owned() + cover_art_id;
-            let response_bytes = self.get_response_bytes(&path, Some(&parameters)).await?;
+            let (response_bytes, _) = self.get_response_bytes(&path, Some(&parameters)).await?;
             let file_path = cover_art_id.to_owned();
 
             Ok(Some((response_bytes, file_path)))
@@ -354,5 +366,15 @@ impl SubsonicClient {
             Err(err) => Err(Box::new(err)),
             _ => Ok(None),
         }
+    }
+    pub(crate) async fn stream(
+        &self,
+        item: impl Streamable,
+    ) -> Result<Option<(Bytes, String)>, Box<dyn Error>> {
+        let path = "/stream".to_owned();
+        let parameters = "&id=".to_owned() + item.get_id();
+        let (response_bytes, file_path) = self.get_response_bytes(&path, Some(&parameters)).await?;
+
+        Ok(Some((response_bytes, file_path.unwrap())))
     }
 }

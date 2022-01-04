@@ -1,3 +1,4 @@
+use reqwest::header::CONTENT_TYPE;
 use tokio::{fs::File, io::AsyncWriteExt};
 
 use crate::api::subsonic_client::SubsonicClient;
@@ -64,9 +65,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //     }
     // };
 
-    // if let Some(song) = subsonic_client.get_song(1).await? {
-    //     println!("{:#?}", song);
-    // }
+    if let Some(song) = subsonic_client.get_song(1).await? {
+        println!("{:#?}", song);
+        if let Some((song_stream, file_name)) = subsonic_client.stream(song).await? {
+            let mut file = File::create(file_name).await?;
+            file.write_all(&song_stream).await?;
+            file.sync_all().await?
+        }
+    }
     // if let Some(song) = subsonic_client.get_album(1).await? {
     //     println!("{:#?}", song);
     // }

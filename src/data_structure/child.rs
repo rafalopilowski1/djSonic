@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use serde_with::{serde_as, DisplayFromStr};
 
-use crate::api::traits::CoverArt;
+use crate::api::traits::{CoverArt, Streamable};
 #[serde_as]
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -89,6 +89,11 @@ pub(crate) struct Child {
 impl CoverArt for Child {
     fn get_cover_art_id(&self) -> Option<&str> {
         self.cover_art.as_deref()
+    }
+}
+impl Streamable for Child {
+    fn get_id(&self) -> &str {
+        self.id.as_ref()
     }
 }
 #[derive(Deserialize, Debug)]

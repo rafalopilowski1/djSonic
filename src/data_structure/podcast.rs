@@ -24,6 +24,11 @@ pub(crate) struct PodcastEpisode {
     status: PodcastStatus,
     publish_date: Option<String>,
 }
+impl PodcastEpisode {
+    fn get_child(&self) -> &Child {
+        &self.child
+    }
+}
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct PodcastChannel {
