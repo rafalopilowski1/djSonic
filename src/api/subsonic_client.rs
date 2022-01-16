@@ -28,7 +28,7 @@ use crate::data_structure::{
 
 use super::traits::{CoverArt, Streamable};
 
-pub(crate) struct SubsonicClient {
+pub struct SubsonicClient {
     inner_client: Client,
     API_ENDPOINT: String,
     user: String,

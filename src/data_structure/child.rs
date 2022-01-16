@@ -15,8 +15,8 @@ pub(crate) struct Child {
     #[serde_as(as = "DisplayFromStr")]
     is_dir: bool,
 
-    title: String,
-    album: Option<String>,
+    pub title: String,
+    pub album: Option<String>,
 
     #[serde_as(as = "Option<DisplayFromStr>")]
     #[serde(default)]
@@ -27,7 +27,7 @@ pub(crate) struct Child {
     year: Option<u32>,
 
     genre: Option<String>,
-    cover_art: Option<String>,
+    pub cover_art: Option<String>,
 
     #[serde_as(as = "Option<DisplayFromStr>")]
     #[serde(default)]
@@ -71,7 +71,7 @@ pub(crate) struct Child {
     created: Option<String>,
     starred: Option<String>,
     album_id: Option<String>,
-    artist_id: Option<String>,
+    pub artist_id: Option<String>,
     media_type: Option<MediaType>,
 
     #[serde_as(as = "Option<DisplayFromStr>")]

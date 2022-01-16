@@ -45,7 +45,7 @@ pub(crate) struct ArtistID3 {
     #[serde(default)]
     albums: Option<Vec<AlbumID3>>,
     id: String,
-    name: String,
+    pub name: String,
     cover_art: Option<String>,
     artist_image_url: Option<String>,
     album_count: u32,
