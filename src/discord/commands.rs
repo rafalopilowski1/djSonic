@@ -1,5 +1,6 @@
 use serenity::{
     async_trait,
+    builder::CreateEmbed,
     model::{
         id::GuildId,
         interactions::{
@@ -12,6 +13,7 @@ use serenity::{
     },
     prelude::*,
 };
+use songbird::{input::Restartable, Driver};
 use tokio::runtime::Handle;
 
 use crate::api::subsonic_client::SubsonicClient;
@@ -30,6 +32,11 @@ impl Handler {
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
+            let guild_id = command.guild_id.unwrap();
+            let manager = songbird::get(&ctx)
+                .await
+                .expect("Songbird init failure!")
+                .clone();
             let content = match command.data.name.as_str() {
                 "play" => {
                     let track_id = command
@@ -58,33 +65,34 @@ impl EventHandler for Handler {
                 }
                 _ => None,
             };
-            if let Some(child) = content.as_ref() {
-                let guild_id = command.guild_id.unwrap();
-                let manager = songbird::get(&ctx)
-                    .await
-                    .expect("Songbird init failure!")
-                    .clone();
-                let member = command.member.as_ref().unwrap();
-
-                let _handler = manager.join(guild_id, 920001255445770264).await;
-                if let Some(handler_lock) = manager.get(guild_id) {
-                    let mut handler = handler_lock.lock().await;
-
-                    let stream_url = self
-                        .subsonic_client
-                        .stream_url(child)
+            match command.data.name.as_str() {
+                "play" => {
+                    command
+                        .create_interaction_response(&ctx.http, |response| {
+                            response.kind(InteractionResponseType::DeferredChannelMessageWithSource)
+                        })
                         .await
-                        .expect("Stream URL not avaliable!");
-                    let source = songbird::ffmpeg(stream_url.unwrap()).await.ok().unwrap();
-                    let track_handle = handler.play_only_source(source);
-                    track_handle.play();
-                }
-            }
-            if let Err(why) = command
-                .create_interaction_response(&ctx.http, |response| {
-                    response
-                        .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|messange| {
+                        .expect("Failure posting!");
+                    if let Some(child) = content.as_ref() {
+                        let _handler = manager.join(guild_id, 920001255445770264).await;
+                        if let Some(handler_lock) = manager.get(guild_id) {
+                            let mut handler = handler_lock.lock().await;
+                            let stream_url = self
+                                .subsonic_client
+                                .stream_url(child)
+                                .await
+                                .expect("Stream URL not avaliable!");
+                            let source =
+                                songbird::input::Restartable::ffmpeg(stream_url.unwrap(), false)
+                                    .await
+                                    .ok()
+                                    .unwrap();
+                            let (audio, _) = songbird::tracks::create_player(source.into());
+                            handler.play_only(audio);
+                        }
+                    }
+                    command
+                        .edit_original_interaction_response(&ctx.http, |messange| {
                             if let Some(child) = content {
                                 messange.add_embed(
                                     tokio::task::block_in_place(|| {
@@ -96,19 +104,39 @@ impl EventHandler for Handler {
                                 );
                                 messange
                             } else {
-                                messange.create_embed(|embed| {
-                                    embed.color(0).title("Error").field(
-                                        "Origin",
-                                        "Track not found!",
-                                        false,
-                                    )
-                                })
+                                messange.add_embed(
+                                    CreateEmbed::default()
+                                        .color(0)
+                                        .title("Error")
+                                        .field("Origin", "Track not found!", false)
+                                        .to_owned(),
+                                );
+                                messange
                             }
                         })
-                })
-                .await
-            {
-                eprintln!("Cannot respond to slash message: {}", why);
+                        .await
+                        .expect("Edit failure!");
+                }
+                "stop" => {
+                    if let Some(handler_lock) = manager.get(guild_id) {
+                        let mut handler = handler_lock.lock().await;
+                        handler.stop();
+                        handler.leave().await.expect("Leave failure!");
+                    }
+                    command
+                        .create_interaction_response(&ctx.http, |response| {
+                            response
+                                .kind(InteractionResponseType::ChannelMessageWithSource)
+                                .interaction_response_data(|messange| {
+                                    messange.add_embed(
+                                        CreateEmbed::default().title("Stopped!").to_owned(),
+                                    )
+                                })
+                        })
+                        .await
+                        .expect("Pong failure!");
+                }
+                _ => (),
             }
         }
     }
@@ -121,18 +149,24 @@ impl EventHandler for Handler {
                 .expect("Invalid guild ID!"),
         );
         let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            commands.create_application_command(|command| {
-                command
-                    .name("play")
-                    .description("Play given ID")
-                    .create_option(|option| {
-                        option
-                            .name("id")
-                            .description("ID to play")
-                            .required(true)
-                            .kind(ApplicationCommandOptionType::Integer)
-                    })
-            })
+            commands
+                .create_application_command(|command| {
+                    command
+                        .name("play")
+                        .description("Play given ID")
+                        .create_option(|option| {
+                            option
+                                .name("id")
+                                .description("ID to play")
+                                .required(true)
+                                .kind(ApplicationCommandOptionType::Integer)
+                        })
+                })
+                .create_application_command(|command| {
+                    command
+                        .name("stop")
+                        .description("Stop playing and kich the bot out of voice channel")
+                })
         })
         .await;
         println!("Created guild slash commands: {:#?}", commands);
