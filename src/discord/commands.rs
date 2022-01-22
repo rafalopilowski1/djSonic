@@ -58,6 +58,28 @@ impl EventHandler for Handler {
                 }
                 _ => None,
             };
+            if let Some(child) = content.as_ref() {
+                let guild_id = command.guild_id.unwrap();
+                let manager = songbird::get(&ctx)
+                    .await
+                    .expect("Songbird init failure!")
+                    .clone();
+                let member = command.member.as_ref().unwrap();
+
+                let _handler = manager.join(guild_id, 920001255445770264).await;
+                if let Some(handler_lock) = manager.get(guild_id) {
+                    let mut handler = handler_lock.lock().await;
+
+                    let stream_url = self
+                        .subsonic_client
+                        .stream_url(child)
+                        .await
+                        .expect("Stream URL not avaliable!");
+                    let source = songbird::ffmpeg(stream_url.unwrap()).await.ok().unwrap();
+                    let track_handle = handler.play_only_source(source);
+                    track_handle.play();
+                }
+            }
             if let Err(why) = command
                 .create_interaction_response(&ctx.http, |response| {
                     response

@@ -387,4 +387,12 @@ impl SubsonicClient {
 
         Ok(Some((response_bytes, file_path.unwrap())))
     }
+    pub(crate) async fn stream_url(
+        &self,
+        item: &(impl Streamable),
+    ) -> Result<Option<String>, Box<dyn Error>> {
+        let path = "/stream".to_owned();
+        let parameters = "&id=".to_owned() + item.get_id();
+        self.get_response_url(&path, Some(&parameters)).await
+    }
 }
