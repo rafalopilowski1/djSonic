@@ -33,11 +33,9 @@ impl Embed for Child {
                     .to_owned();
             };
         }
-        // if let Some((cover_art_bytes, file_path)) = subsonic_client.get_cover_art(self).await? {
-        //     let base64String = base64::encode_config(cover_art_bytes, base64::URL_SAFE_NO_PAD);
-        //     let url = format!("data:content/type;base64,{}", base64String);
-        //     embed = embed.thumbnail(url).to_owned();
-        // }
+        if let Some(url_to_cover) = subsonic_client.get_cover_art_url(self).await? {
+            embed = embed.thumbnail(url_to_cover).to_owned();
+        }
 
         Ok(embed)
     }

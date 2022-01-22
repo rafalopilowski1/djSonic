@@ -68,6 +68,19 @@ impl SubsonicClient {
         }
         result
     }
+    async fn get_response_url(
+        &self,
+        path: &str,
+        parameters: Option<&str>,
+    ) -> Result<Option<String>, Box<dyn Error>> {
+        Ok(Some(
+            self.API_ENDPOINT.clone()
+                + path
+                + "?"
+                + &self.get_auth_token()
+                + parameters.unwrap_or(""),
+        ))
+    }
     async fn get_response_bytes(
         &self,
         path: &str,
@@ -283,17 +296,14 @@ impl SubsonicClient {
             _ => Ok(None),
         }
     }
-    pub(crate) async fn get_cover_art(
+    pub(crate) async fn get_cover_art_url(
         &self,
         item: impl CoverArt,
-    ) -> Result<Option<(Bytes, String)>, Box<dyn Error>> {
+    ) -> Result<Option<String>, Box<dyn Error>> {
         if let Some(cover_art_id) = item.get_cover_art_id() {
             let path = "/getCoverArt".to_owned();
             let parameters = "&id=".to_owned() + cover_art_id;
-            let (response_bytes, _) = self.get_response_bytes(&path, Some(&parameters)).await?;
-            let file_path = cover_art_id.to_owned();
-
-            Ok(Some((response_bytes, file_path)))
+            self.get_response_url(&path, Some(&parameters)).await
         } else {
             Ok(None)
         }
