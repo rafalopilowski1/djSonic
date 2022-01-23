@@ -1,5 +1,6 @@
 /target
 .env
+.production.env
 /.idea
 Cargo.lock
 .vscode
