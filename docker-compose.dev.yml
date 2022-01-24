@@ -2,3 +2,5 @@ version: '0.0.1'
 services:
   djsonic:
     build: .
+    env_file:
+      - .env

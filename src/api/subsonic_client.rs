@@ -48,15 +48,10 @@ impl SubsonicClient {
             password: password.to_owned(),
             version: None,
         };
-        client_to_init.init().await?;
+        client_to_init.ping().await?;
         Ok(client_to_init)
     }
-    pub(crate) async fn init(&mut self) -> Result<(), Box<dyn Error>> {
-        if let Some(info) = self.ping().await? {
-            self.version = Some(info.version);
-        };
-        Ok(())
-    }
+
     fn get_auth_token(&self) -> String {
         let random: String = thread_rng().gen::<u64>().to_string();
         let salted_pass = self.password.clone() + &random;
@@ -266,10 +261,11 @@ impl SubsonicClient {
             _ => Ok(None),
         }
     }
-    pub(crate) async fn ping(&self) -> Result<Option<SubSonicResponse>, Box<dyn Error>> {
+    pub(crate) async fn ping(&mut self) -> Result<(), Box<dyn Error>> {
         let path = "/ping".to_owned();
         let response = self.get_response(&path, None).await?;
-        Ok(Some(response))
+        self.version = Some(response.version);
+        Ok(())
     }
     pub(crate) async fn search3(
         &self,

@@ -6,19 +6,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serenity = {verison="0.10",features=["unstable_discord_api","client","standard_framework","voice"]}
+mimalloc="0.1.27"
+serenity = {version="0.10",default-features = false,features=["unstable_discord_api","client","standard_framework","voice"]}
 songbird = {version="0.2.1"}
 quick-xml = {version="0.22.0",features=["serialize"]}
 # poise ="0.0.0" - TODO: wait until it's released!
-reqwest = "0.11.7"
-tokio = {version="1.15.0",features=["full"]}
+reqwest = {version="0.11.7",features=["native-tls-crate"]}
+tokio = {version="1.15.0",features=["default","rt-multi-thread"]}
 md5 = "0.7.0"
 rand = "0.8.4"
 serde = {version="1.0.132",features = ["derive"]}
-dotenv = "0.15.0"
 serde_with="1.11.0"
 serde_path_to_error="0.1.5"
 bytes="1.1.0"
 url-escape = "0.1.0"
 async-trait = "0.1.52"
-base64 = "0.13.0"

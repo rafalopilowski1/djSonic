@@ -143,7 +143,7 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
         let guild_id = GuildId(
-            dotenv::var("GUILD_ID")
+            std::env::var("GUILD_ID")
                 .expect("GUILD_ID not fount in dotfile!")
                 .parse()
                 .expect("Invalid guild ID!"),

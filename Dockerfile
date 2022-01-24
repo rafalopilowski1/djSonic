@@ -1,14 +1,30 @@
-FROM rust
+FROM rust:alpine as chef
+RUN apk add musl-dev opus-dev openssl-dev -f
+ARG TARGET="x86_64-unknown-linux-musl"
+RUN cargo install cargo-chef --target=${TARGET}
 
+FROM chef AS planner
+WORKDIR /planner
+COPY . /planner
+RUN cargo chef prepare --recipe-path recipe.json
 
-COPY . /usr/src/djSonic
+FROM chef as builder
 
-WORKDIR /usr/src/djSonic
+ARG TARGET="x86_64-unknown-linux-musl"
 
-RUN apt-get update && apt-get install ffmpeg -y
+WORKDIR /builder/
 
-RUN cargo install --path . --profile release
+COPY --from=planner planner/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
 
-RUN rm -rf /src/target
+COPY . /builder/
+RUN cargo build --release --target=${TARGET}
 
-CMD ["djSonic"]
+FROM alpine:latest as ffmpeg-runner
+
+WORKDIR /usr/local/bin/
+
+COPY --from=builder builder/target/release/djSonic /usr/local/bin/
+RUN apk add ffmpeg -f
+
+ENTRYPOINT ["djSonic"]
