@@ -1,16 +1,17 @@
-FROM rust:alpine as chef
-RUN apk add musl-dev opus-dev openssl-dev -f
-ARG TARGET="x86_64-unknown-linux-musl"
-RUN cargo install cargo-chef --target=${TARGET}
+FROM rust:slim as chef
+
+RUN apt-get update -y
+RUN apt-get install libopus-dev libssl-dev pkg-config build-essential -y
+
+RUN cargo install cargo-chef
 
 FROM chef AS planner
+
 WORKDIR /planner
 COPY . /planner
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef as builder
-
-ARG TARGET="x86_64-unknown-linux-musl"
 
 WORKDIR /builder/
 
@@ -18,13 +19,14 @@ COPY --from=planner planner/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 
 COPY . /builder/
-RUN cargo build --release --target=${TARGET}
+RUN cargo build --release
 
-FROM alpine:latest as ffmpeg-runner
+FROM debian:bullseye-slim as ffmpeg-runner
 
 WORKDIR /usr/local/bin/
 
 COPY --from=builder builder/target/release/djSonic /usr/local/bin/
-RUN apk add ffmpeg -f
+RUN apt-get update -y
+RUN apt-get install ca-certificates ffmpeg -y
 
 ENTRYPOINT ["djSonic"]
