@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-mimalloc="0.1.27"
 serenity = {version="0.10",features=["unstable_discord_api","voice"]}
 songbird = {version="0.2.1"}
 quick-xml = {version="0.22.0",features=["serialize"]}
@@ -21,6 +20,7 @@ serde_path_to_error="0.1.5"
 bytes="1.1.0"
 url-escape = "0.1.0"
 async-trait = "0.1.52"
+
 
 [target.x86_64-unknown-linux-musl]
 rustflags=["-C","target-feature=+crt-static","-C","link-self-contained=yes"]

@@ -6,11 +6,6 @@ use crate::api::subsonic_client::SubsonicClient;
 use songbird::SerenityInit;
 use std::error::Error;
 
-use mimalloc::MiMalloc;
-
-#[global_allocator]
-static GLOBAL: MiMalloc = MiMalloc;
-
 mod api;
 mod data_structure;
 mod discord;
