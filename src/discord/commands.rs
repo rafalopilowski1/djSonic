@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use serenity::{
     async_trait,
     builder::CreateEmbed,
@@ -5,7 +7,8 @@ use serenity::{
         id::GuildId,
         interactions::{
             application_command::{
-                ApplicationCommandInteractionDataOptionValue, ApplicationCommandOptionType,
+                ApplicationCommandInteraction, ApplicationCommandInteractionDataOptionValue,
+                ApplicationCommandOptionType,
             },
             InteractionResponseType,
         },
@@ -13,13 +16,12 @@ use serenity::{
     },
     prelude::*,
 };
-use songbird::{input::Restartable, Driver};
+use songbird::Songbird;
 use tokio::runtime::Handle;
 
-use crate::api::subsonic_client::SubsonicClient;
+use crate::{api::subsonic_client::SubsonicClient, data_structure::child::Child};
 
 use super::embed::Embed;
-
 pub struct Handler {
     pub subsonic_client: SubsonicClient,
 }
@@ -37,109 +39,24 @@ impl EventHandler for Handler {
                 .await
                 .expect("Songbird init failure!")
                 .clone();
-            let content = match command.data.name.as_str() {
-                "play" => {
-                    let track_id = command
-                        .data
-                        .options
-                        .get(0)
-                        .expect("Expected track ID v1")
-                        .resolved
-                        .as_ref()
-                        .expect("Expected track ID v2");
-                    if let ApplicationCommandInteractionDataOptionValue::Integer(track_id_to_play) =
-                        track_id
-                    {
-                        match self
-                            .subsonic_client
-                            .get_song(*track_id_to_play as u16)
-                            .await
-                            .ok()
-                        {
-                            Some(response) => response,
-                            None => None,
-                        }
-                    } else {
-                        None
-                    }
-                }
-                _ => None,
-            };
             match command.data.name.as_str() {
                 "play" => {
-                    command
-                        .create_interaction_response(&ctx.http, |response| {
-                            response.kind(InteractionResponseType::DeferredChannelMessageWithSource)
-                        })
-                        .await
-                        .expect("Failure posting!");
-                    if let Some(child) = content.as_ref() {
-                        let (handler, result) = manager.join(guild_id, 920001255445770264).await;
-                        if let Err(err) = result {
-                            println!("{:#?}", err);
-                        } else {
-                            let mut handler_unlocked = handler.lock().await;
-                            let stream_url = self
-                                .subsonic_client
-                                .stream_url(child)
-                                .await
-                                .expect("Stream URL not avaliable!");
-                            let source =
-                                songbird::input::Restartable::ffmpeg(stream_url.unwrap(), false)
-                                    .await
-                                    .ok()
-                                    .unwrap();
-                            let (audio, _) = songbird::tracks::create_player(source.into());
-                            handler_unlocked.play_only(audio);
-                        }
-                    }
-                    command
-                        .edit_original_interaction_response(&ctx.http, |messange| {
-                            if let Some(child) = content {
-                                messange.add_embed(
-                                    tokio::task::block_in_place(|| {
-                                        Handle::current().block_on(async move {
-                                            child.embed(&self.subsonic_client).await
-                                        })
-                                    })
-                                    .expect("Bad parsing!"),
-                                );
-                                messange
-                            } else {
-                                messange.add_embed(
-                                    CreateEmbed::default()
-                                        .color(0)
-                                        .title("Error")
-                                        .field("Origin", "Track not found!", false)
-                                        .to_owned(),
-                                );
-                                messange
-                            }
-                        })
-                        .await
-                        .expect("Edit failure!");
+                    let content = get_content_to_play(&command, &self.subsonic_client).await;
+                    play_on_discord(
+                        &command,
+                        &ctx,
+                        content,
+                        &self.subsonic_client,
+                        Arc::clone(&manager),
+                        guild_id,
+                    )
+                    .await;
                 }
                 "stop" => {
-                    if let Some(handler_lock) = manager.get(guild_id) {
-                        let mut handler = handler_lock.lock().await;
-                        handler.stop();
-                        handler.leave().await.expect("Leave failure!");
-                    }
-                    command
-                        .create_interaction_response(&ctx.http, |response| {
-                            response
-                                .kind(InteractionResponseType::ChannelMessageWithSource)
-                                .interaction_response_data(|messange| {
-                                    messange.add_embed(
-                                        CreateEmbed::default().title("Stopped!").to_owned(),
-                                    )
-                                })
-                        })
-                        .await
-                        .expect("Pong failure!");
+                    stop_on_discord(Arc::clone(&manager), guild_id, &command, &ctx).await;
                 }
-                _ => (),
-            }
+                _ => {}
+            };
         }
     }
     async fn ready(&self, ctx: Context, ready: Ready) {
@@ -173,4 +90,109 @@ impl EventHandler for Handler {
         .await;
         println!("Created guild slash commands: {:#?}", commands);
     }
+}
+
+pub async fn get_content_to_play(
+    command: &ApplicationCommandInteraction,
+    subsonic_client: &SubsonicClient,
+) -> Option<Child> {
+    let track_id = command
+        .data
+        .options
+        .get(0)
+        .expect("Expected track ID v1")
+        .resolved
+        .as_ref()
+        .expect("Expected track ID v2");
+    if let ApplicationCommandInteractionDataOptionValue::Integer(track_id_to_play) = track_id {
+        match subsonic_client
+            .get_song(*track_id_to_play as u16)
+            .await
+            .ok()
+        {
+            Some(response) => response,
+            None => None,
+        }
+    } else {
+        None
+    }
+}
+pub async fn play_on_discord(
+    command: &ApplicationCommandInteraction,
+    ctx: &Context,
+    content: Option<Child>,
+    subsonic_client: &SubsonicClient,
+    manager: Arc<Songbird>,
+    guild_id: GuildId,
+) {
+    command
+        .create_interaction_response(&ctx.http, |response| {
+            response.kind(InteractionResponseType::DeferredChannelMessageWithSource)
+        })
+        .await
+        .expect("Failure posting!");
+    if let Some(child) = content.as_ref() {
+        let (handler, result) = manager.join(guild_id, 920001255445770264).await;
+        if let Err(err) = result {
+            println!("{:#?}", err);
+        } else {
+            let mut handler_unlocked = handler.lock().await;
+            let stream_url = subsonic_client
+                .stream_url(child)
+                .await
+                .expect("Stream URL not avaliable!");
+            let source = songbird::input::Restartable::ffmpeg(stream_url.unwrap(), false)
+                .await
+                .ok()
+                .unwrap();
+            let (audio, trackHandle) = songbird::tracks::create_player(source.into());
+            handler_unlocked.play_only(audio);
+        }
+    }
+    command
+        .edit_original_interaction_response(&ctx.http, |messange| {
+            if let Some(child) = content {
+                messange.add_embed(
+                    tokio::task::block_in_place(|| {
+                        Handle::current()
+                            .block_on(async move { child.embed(&subsonic_client).await })
+                    })
+                    .expect("Bad parsing!"),
+                );
+                messange
+            } else {
+                messange.add_embed(
+                    CreateEmbed::default()
+                        .color(0)
+                        .title("Error")
+                        .field("Origin", "Track not found!", false)
+                        .to_owned(),
+                );
+                messange
+            }
+        })
+        .await
+        .expect("Edit failure!");
+}
+pub async fn stop_on_discord(
+    manager: Arc<Songbird>,
+    guild_id: GuildId,
+    command: &ApplicationCommandInteraction,
+    ctx: &Context,
+) {
+    if let Some(handler_lock) = manager.get(guild_id) {
+        let mut handler = handler_lock.lock().await;
+        handler.stop();
+        handler.leave().await.expect("Leave failure!");
+    }
+    command
+        .create_interaction_response(&ctx.http, |response| {
+            response
+                .kind(InteractionResponseType::ChannelMessageWithSource)
+                .interaction_response_data(|messange| {
+                    messange.add_embed(CreateEmbed::default().title("Stopped!").to_owned())
+                })
+        })
+        .await
+        .expect("Pong failure!");
 }

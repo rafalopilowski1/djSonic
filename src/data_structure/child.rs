@@ -8,7 +8,7 @@ use crate::api::traits::{CoverArt, Streamable};
 #[serde_as]
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct Child {
+pub struct Child {
     id: String,
     parent: Option<String>,
 
