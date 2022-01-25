@@ -7,12 +7,12 @@ edition = "2021"
 
 [dependencies]
 mimalloc="0.1.27"
-serenity = {version="0.10",default-features = false,features=["unstable_discord_api","client","standard_framework","voice"]}
+serenity = {version="0.10",features=["unstable_discord_api","voice"]}
 songbird = {version="0.2.1"}
 quick-xml = {version="0.22.0",features=["serialize"]}
 # poise ="0.0.0" - TODO: wait until it's released!
-reqwest = {version="0.11.7"}
-tokio = {version="1.15.0",features=["default","rt-multi-thread"]}
+reqwest = {version="0.11.7",default-features = false, features=["rustls-tls","rustls-tls-webpki-roots"]}
+tokio = {version="1.15.0", features=["default","rt-multi-thread"]}
 md5 = "0.7.0"
 rand = "0.8.4"
 serde = {version="1.0.132",features = ["derive"]}
@@ -21,3 +21,9 @@ serde_path_to_error="0.1.5"
 bytes="1.1.0"
 url-escape = "0.1.0"
 async-trait = "0.1.52"
+
+[target.x86_64-unknown-linux-musl]
+rustflags=["-C","target-feature=+crt-static","-C","link-self-contained=yes"]
+
+[profile.release]
+lto = true

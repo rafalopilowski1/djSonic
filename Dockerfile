@@ -1,31 +1,29 @@
-FROM rust:slim as chef
-
-RUN apt-get update -y && apt-get install libopus-dev libssl-dev pkg-config -y && rm -rf /var/lib/apt/lists/*
-
+FROM rust:alpine as chef
+RUN apk add musl-dev -f --no-cache
 RUN cargo install cargo-chef
 
 FROM chef AS planner
 
 WORKDIR /planner
 COPY . /planner
+
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef as builder
-
-WORKDIR /builder/
-
+WORKDIR /
+ARG TARGET=x86_64-unknown-linux-musl
 COPY --from=planner planner/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN apk add opus-dev -f --no-cache
 
-COPY . /builder/
-RUN cargo build --release
+RUN cargo chef cook --release --recipe-path recipe.json --target=${TARGET}
 
-FROM debian:bullseye-slim AS runner
+COPY . .
+RUN cargo install --path . --profile release --target=${TARGET}
+
+FROM alpine:latest AS runner
 
 WORKDIR /usr/local/bin/
+COPY --from=builder /usr/local/cargo/bin/djSonic /usr/local/bin/
 
-COPY --from=builder builder/target/release/djSonic /usr/local/bin/
-
-RUN apt-get update -y && apt-get install ca-certificates ffmpeg --no-install-recommends -y && rm -rf /var/lib/apt/lists/*
-
+RUN apk add ca-certificates ffmpeg -f --no-cache
 ENTRYPOINT ["djSonic"]

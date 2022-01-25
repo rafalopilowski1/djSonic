@@ -68,6 +68,14 @@ impl SubsonicClient {
         path: &str,
         parameters: Option<&str>,
     ) -> Result<Option<String>, Box<dyn Error>> {
+        println!(
+            "{}",
+            self.API_ENDPOINT.clone()
+                + path
+                + "?"
+                + &self.get_auth_token()
+                + parameters.unwrap_or("")
+        );
         Ok(Some(
             self.API_ENDPOINT.clone()
                 + path
@@ -101,6 +109,7 @@ impl SubsonicClient {
                 + parameters.unwrap_or("")
         );
         if response.status() != StatusCode::OK {
+            println!("Error while downloading response!");
             Err(Box::new(ResponseError::new(
                 response.status().as_u16(),
                 response.status().canonical_reason().unwrap(),

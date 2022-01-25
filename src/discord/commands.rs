@@ -74,9 +74,11 @@ impl EventHandler for Handler {
                         .await
                         .expect("Failure posting!");
                     if let Some(child) = content.as_ref() {
-                        let _handler = manager.join(guild_id, 920001255445770264).await;
-                        if let Some(handler_lock) = manager.get(guild_id) {
-                            let mut handler = handler_lock.lock().await;
+                        let (handler, result) = manager.join(guild_id, 920001255445770264).await;
+                        if let Err(err) = result {
+                            println!("{:#?}", err);
+                        } else {
+                            let mut handler_unlocked = handler.lock().await;
                             let stream_url = self
                                 .subsonic_client
                                 .stream_url(child)
@@ -88,7 +90,7 @@ impl EventHandler for Handler {
                                     .ok()
                                     .unwrap();
                             let (audio, _) = songbird::tracks::create_player(source.into());
-                            handler.play_only(audio);
+                            handler_unlocked.play_only(audio);
                         }
                     }
                     command
