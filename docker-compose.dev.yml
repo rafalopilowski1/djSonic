@@ -4,3 +4,7 @@ services:
     build: .
     env_file:
       - .env
+    shm_size: '256mb'
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
