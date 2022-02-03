@@ -48,7 +48,7 @@ impl SubsonicClient {
             password: password.to_owned(),
             version: None,
         };
-        client_to_init.ping().await?;
+            client_to_init.ping().await?;
         Ok(client_to_init)
     }
 

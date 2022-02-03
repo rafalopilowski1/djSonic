@@ -16,7 +16,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let user = std::env::var("SUBSONIC_USER")?;
     let password = std::env::var("SUBSONIC_PASSWORD")?;
 
-    let subsonic_client = SubsonicClient::new(&API_ENDPOINT, &user, &password).await?;
+    let subsonic_client = SubsonicClient::new(&API_ENDPOINT, &user, &password)
+        .await
+        .expect("SubSonic server not responsing! Check your internet connection or server status.");
 
     let token = std::env::var("DISCORD_TOKEN")?;
     let application_id: u64 = std::env::var("APPLICATION_ID")?.parse()?;

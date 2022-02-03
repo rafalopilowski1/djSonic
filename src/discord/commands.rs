@@ -1,10 +1,11 @@
-use std::sync::Arc;
+use std::{any::Any, sync::Arc};
 
 use serenity::{
     async_trait,
     builder::CreateEmbed,
     model::{
-        id::GuildId,
+        channel::ChannelType,
+        id::{ChannelId, GuildId},
         interactions::{
             application_command::{
                 ApplicationCommandInteraction, ApplicationCommandInteractionDataOptionValue,
@@ -132,47 +133,82 @@ pub async fn play_on_discord(
         .await
         .expect("Failure posting!");
     if let Some(child) = content.as_ref() {
-        let (handler, result) = manager.join(guild_id, 920001255445770264).await;
-        if let Err(err) = result {
-            println!("{:#?}", err);
+        let mut channelId: Option<ChannelId> = None;
+        let user = &command.user;
+        let channels = ctx
+            .http
+            .get_channels(*guild_id.as_u64())
+            .await
+            .expect("Channels failed!");
+        for channel in channels {
+            if channel.kind == ChannelType::Voice
+                && channel
+                    .members(&ctx.cache)
+                    .await
+                    .expect("Channel members failed!")
+                    .iter()
+                    .any(|member| member.user.id == user.id)
+            {
+                channelId = Some(channel.id);
+            }
+        }
+        if let Some(channel_id) = channelId {
+            let (handler, result) = manager.join(guild_id, channel_id).await;
+            if let Err(err) = result {
+                println!("{:#?}", err);
+            } else {
+                let mut handler_unlocked = handler.lock().await;
+                let stream_url = subsonic_client
+                    .stream_url(child)
+                    .await
+                    .expect("Stream URL not avaliable!");
+                let source = songbird::input::Restartable::ffmpeg(stream_url.unwrap(), false)
+                    .await
+                    .ok()
+                    .unwrap();
+                let (audio, trackHandle) = songbird::tracks::create_player(source.into());
+                handler_unlocked.play_only(audio);
+            }
+            command
+                .edit_original_interaction_response(&ctx.http, |messange| {
+                    if let Some(child) = content {
+                        messange.add_embed(
+                            tokio::task::block_in_place(|| {
+                                Handle::current()
+                                    .block_on(async move { child.embed(&subsonic_client).await })
+                            })
+                            .expect("Bad parsing!"),
+                        );
+                        messange
+                    } else {
+                        messange.add_embed(
+                            CreateEmbed::default()
+                                .color(0)
+                                .title("Error")
+                                .field("Origin", "Track not found!", false)
+                                .to_owned(),
+                        );
+                        messange
+                    }
+                })
+                .await
+                .expect("Edit failure!");
         } else {
-            let mut handler_unlocked = handler.lock().await;
-            let stream_url = subsonic_client
-                .stream_url(child)
+            command
+                .edit_original_interaction_response(&ctx.http, |messange| {
+                    messange.add_embed(
+                        CreateEmbed::default()
+                            .color(0)
+                            .title("Error")
+                            .field("Origin", "Not connected to any voice channel!", false)
+                            .to_owned(),
+                    );
+                    messange
+                })
                 .await
-                .expect("Stream URL not avaliable!");
-            let source = songbird::input::Restartable::ffmpeg(stream_url.unwrap(), false)
-                .await
-                .ok()
-                .unwrap();
-            let (audio, trackHandle) = songbird::tracks::create_player(source.into());
-            handler_unlocked.play_only(audio);
+                .expect("Voice channel not found failure!");
         }
     }
-    command
-        .edit_original_interaction_response(&ctx.http, |messange| {
-            if let Some(child) = content {
-                messange.add_embed(
-                    tokio::task::block_in_place(|| {
-                        Handle::current()
-                            .block_on(async move { child.embed(&subsonic_client).await })
-                    })
-                    .expect("Bad parsing!"),
-                );
-                messange
-            } else {
-                messange.add_embed(
-                    CreateEmbed::default()
-                        .color(0)
-                        .title("Error")
-                        .field("Origin", "Track not found!", false)
-                        .to_owned(),
-                );
-                messange
-            }
-        })
-        .await
-        .expect("Edit failure!");
 }
 pub async fn stop_on_discord(
     manager: Arc<Songbird>,
