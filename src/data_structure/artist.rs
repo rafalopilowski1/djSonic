@@ -40,15 +40,15 @@ pub(crate) struct IndexID3 {
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct ArtistID3 {
+pub struct ArtistID3 {
     #[serde(rename = "$value")]
     #[serde(default)]
     albums: Option<Vec<AlbumID3>>,
     id: String,
     pub name: String,
     cover_art: Option<String>,
-    artist_image_url: Option<String>,
-    album_count: u32,
+    pub artist_image_url: Option<String>,
+    pub album_count: u32,
     starred: Option<String>,
 }
 impl CoverArt for ArtistID3 {

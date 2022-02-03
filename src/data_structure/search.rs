@@ -16,7 +16,7 @@ pub(crate) enum SearchResult2 {
 }
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) enum SearchResult3Enum {
+pub enum SearchResult3Enum {
     Artist(ArtistID3),
     Album(AlbumID3),
     Song(Box<Child>),
@@ -38,7 +38,7 @@ pub(crate) struct SearchResult3 {
     value: Option<Vec<SearchResult3Enum>>,
 }
 impl SearchResult3 {
-    pub fn getValues(&self) -> Option<&[SearchResult3Enum]> {
-        self.value.as_deref()
+    pub fn getValues(self) -> Option<Vec<SearchResult3Enum>> {
+        self.value
     }
 }

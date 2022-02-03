@@ -8,16 +8,16 @@ use crate::data_structure::genre::Genre;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct AlbumID3 {
+pub struct AlbumID3 {
     #[serde(rename = "$value")]
     entries: Option<Vec<Child>>,
 
     id: String,
-    name: String,
-    artist: Option<String>,
+    pub name: String,
+    pub artist: Option<String>,
     artist_id: Option<String>,
     cover_art: Option<String>,
-    song_count: u32,
+    pub song_count: u32,
     duration: Option<u32>,
     play_count: Option<u64>,
     created: String,

@@ -48,7 +48,7 @@ impl SubsonicClient {
             password: password.to_owned(),
             version: None,
         };
-            client_to_init.ping().await?;
+        client_to_init.ping().await?;
         Ok(client_to_init)
     }
 
@@ -303,7 +303,7 @@ impl SubsonicClient {
     }
     pub(crate) async fn get_cover_art_url(
         &self,
-        item: impl CoverArt,
+        item: &impl CoverArt,
     ) -> Result<Option<String>, Box<dyn Error>> {
         if let Some(cover_art_id) = item.get_cover_art_id() {
             let path = "/getCoverArt".to_owned();
@@ -394,7 +394,7 @@ impl SubsonicClient {
     }
     pub(crate) async fn stream_url(
         &self,
-        item: &(impl Streamable),
+        item: &impl Streamable,
     ) -> Result<Option<String>, Box<dyn Error>> {
         let path = "/stream".to_owned();
         let parameters = "&id=".to_owned() + item.get_id();
